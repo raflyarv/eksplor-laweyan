@@ -27,7 +27,20 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-location"],
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Inter-VariableFont_opsz,wght.ttf",
+            "./assets/fonts/Inter-Italic-VariableFont_opsz,wght.ttf"
+          ]
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     },

@@ -72,8 +72,20 @@ export default function Explore() {
         }}
         region={currentLocation}
       >
-        <Marker {...kelurahanLaweyan} />
-        <Marker {...soliaZigna} />
+        <Marker
+          coordinate={{
+            latitude: kelurahanLaweyan.coordinate.latitude,
+            longitude: kelurahanLaweyan.coordinate.longitude,
+          }}
+          title={kelurahanLaweyan.title}
+          description={kelurahanLaweyan.description}
+        />
+        <Marker
+          coordinate={{
+            latitude: soliaZigna.coordinate.latitude,
+            longitude: soliaZigna.coordinate.longitude,
+          }}
+        />
         <Marker coordinate={currentLocation} />
       </MapView>
     </View>

@@ -4,7 +4,7 @@ import React from "react";
 export default function Bookmark() {
   return (
     <View>
-      <Text>This is Bookmark Page</Text>
+      <Text>This is Bookmark</Text>
     </View>
   );
 }

@@ -1,7 +1,6 @@
-import { View, Text } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   return (
@@ -18,7 +17,7 @@ export default function TabLayout() {
         options={{
           title: "Beranda",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
+            <MaterialIcons size={28} name="home" color={color} />
           ),
         }}
       />
@@ -27,7 +26,7 @@ export default function TabLayout() {
         options={{
           title: "Jelajah",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="compass" color={color} />
+            <MaterialIcons size={28} name="explore" color={color} />
           ),
         }}
       />
@@ -36,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: "Simpan",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="bookmark" color={color} />
+            <MaterialIcons size={28} name="bookmark" color={color} />
           ),
         }}
       />
@@ -45,7 +44,7 @@ export default function TabLayout() {
         options={{
           title: "Profil",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="user" color={color} />
+            <MaterialIcons size={28} name="account-circle" color={color} />
           ),
         }}
       />
