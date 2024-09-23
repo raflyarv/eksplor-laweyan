@@ -23,7 +23,7 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <Stack
         screenOptions={{
           contentStyle: {
@@ -38,9 +38,9 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="detail"
+          name="details/[id]"
           options={{
-            presentation: "modal",
+            headerTitle: "Detail Wisata",
           }}
         />
       </Stack>
