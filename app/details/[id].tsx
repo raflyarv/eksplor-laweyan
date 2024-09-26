@@ -2,9 +2,12 @@ import { colors } from "@/theme/colors";
 import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
+import { DynamicAvatar, RatingStar } from "../_components";
+import { Icon } from "react-native-elements";
+import { color } from "react-native-elements/dist/helpers";
 
 // Perlu dibuat Models untuk cetakan
 interface OpeningHours {
@@ -93,6 +96,8 @@ export default function SiteDetails() {
   const [isOpenDropdown, setIsOpenDropwdown] = useState(false);
 
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  const [starRating, setStarRating] = useState(0);
 
   return (
     <ScrollView
@@ -230,8 +235,6 @@ export default function SiteDetails() {
               style={{
                 width: 280,
                 maxHeight: 120,
-                borderWidth: 1,
-                borderColor: "grey",
                 borderRadius: 5,
                 marginStart: 15,
                 marginTop: 10,
@@ -239,6 +242,15 @@ export default function SiteDetails() {
                 paddingVertical: spacing.medium,
                 position: "relative",
                 zIndex: 0,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 1.41,
+
+                elevation: 2,
               }}
             >
               <Text
@@ -294,7 +306,8 @@ export default function SiteDetails() {
             flexDirection: "row",
             height: "auto",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: isOpenDropdown ? "flex-start" : "center",
+            marginBottom: spacing.medium,
           }}
         >
           <View
@@ -402,6 +415,225 @@ export default function SiteDetails() {
             </View>
           </Pressable>
         </View>
+
+        <View
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: spacing.medium,
+          }}
+        >
+          <Text style={[typography.headline]}> Ulasan (5) </Text>
+          <Pressable
+            onPress={() => {
+              router.push({
+                pathname: "/details/reviews",
+                params: { id: id },
+              });
+            }}
+          >
+            <Text style={[typography.subhead]}> Lihat Semua </Text>
+          </Pressable>
+        </View>
+        <ScrollView horizontal>
+          <View
+            style={{
+              width: 360,
+              height: "auto",
+              paddingHorizontal: 15,
+              paddingVertical: 15,
+
+              borderRadius: 10,
+              backgroundColor: "#FFF1EC",
+              marginRight: 10,
+            }}
+          >
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "row",
+                gap: 5,
+                alignItems: "center",
+                marginBottom: 5,
+              }}
+            >
+              <DynamicAvatar
+                imageUrl="https://invalid-link.com/avatar.jpg"
+                name="Muhammad Tohir Rafly"
+                size={50}
+              />
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Text style={[typography.subhead]}> Muhammad Tohir Rafly </Text>
+                <Text style={[typography.footnote]}> 10 ulasan </Text>
+              </View>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                marginBottom: 8,
+              }}
+            >
+              <RatingStar rating={4} isEditable={false} />
+              <Icon
+                name="circle"
+                type="material"
+                size={10}
+                color={colors.disable}
+              />
+              <Text style={[typography.footnote]}> 10 bulan yang lalu </Text>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                marginBottom: 8,
+              }}
+            >
+              <Text style={[typography.footnote]}>
+                Dikujungi pada 12 September 2022
+              </Text>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 5,
+              }}
+            >
+              <Text style={[typography.subhead, { fontWeight: "600" }]}>
+                Judul Review !{" "}
+              </Text>
+              <Text
+                style={[typography.subhead]}
+                ellipsizeMode="tail"
+                numberOfLines={4}
+              >
+                Lorem ipsuum bismillah doa untuk semua hari ini pada pagi ini
+                cemungut eakkkkkk Lorem ipsuum bismillah doa untuk semua hari
+                ini pada pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa
+                untuk semua hari ini pada pagi ini cemungut eakkkkkk Lorem
+                ipsuum bismillah doa untuk semua hari ini pada pagi ini cemungut
+                eakkkkkk Lorem ipsuum bismillah doa untuk semua hari ini pada
+                pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa untuk
+                semua hari ini pada pagi ini cemungut eakkkkkk
+              </Text>
+            </View>
+          </View>
+
+          <View
+            style={{
+              width: 360,
+              height: "auto",
+              paddingHorizontal: 15,
+              paddingVertical: 15,
+
+              borderRadius: 10,
+              backgroundColor: "#FFF1EC",
+            }}
+          >
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "row",
+                gap: 5,
+                alignItems: "center",
+                marginBottom: 5,
+              }}
+            >
+              <DynamicAvatar
+                imageUrl="https://invalid-link.com/avatar.jpg"
+                name="Muhammad Tohir Rafly"
+                size={50}
+              />
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Text style={[typography.subhead]}> Muhammad Tohir Rafly </Text>
+                <Text style={[typography.footnote]}> 10 ulasan </Text>
+              </View>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                marginBottom: 8,
+              }}
+            >
+              <RatingStar rating={4} isEditable={false} />
+              <Icon
+                name="circle"
+                type="material"
+                size={10}
+                color={colors.disable}
+              />
+              <Text style={[typography.footnote]}> 10 bulan yang lalu </Text>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                marginBottom: 8,
+              }}
+            >
+              <Text style={[typography.footnote]}>
+                Dikujungi pada 12 September 2022
+              </Text>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 5,
+              }}
+            >
+              <Text style={[typography.subhead, { fontWeight: "600" }]}>
+                Judul Review !{" "}
+              </Text>
+              <Text
+                style={[typography.subhead]}
+                ellipsizeMode="tail"
+                numberOfLines={4}
+              >
+                Lorem ipsuum bismillah doa untuk semua hari ini pada pagi ini
+                cemungut eakkkkkk Lorem ipsuum bismillah doa untuk semua hari
+                ini pada pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa
+                untuk semua hari ini pada pagi ini cemungut eakkkkkk Lorem
+                ipsuum bismillah doa untuk semua hari ini pada pagi ini cemungut
+                eakkkkkk Lorem ipsuum bismillah doa untuk semua hari ini pada
+                pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa untuk
+                semua hari ini pada pagi ini cemungut eakkkkkk
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
       </View>
     </ScrollView>
   );

@@ -16,6 +16,7 @@ import { spacing } from "@/theme/spacing";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router, useNavigation } from "expo-router";
+import { color } from "react-native-elements/dist/helpers";
 
 export default function HomeScreen() {
   const [selectedTab, setSelectedTab] = useState("Terdekat");
@@ -102,7 +103,7 @@ export default function HomeScreen() {
       style={{
         backgroundColor: "white",
         paddingHorizontal: spacing.medium,
-        paddingBottom: 20,
+        paddingTop: "3%",
       }}
     >
       <View
@@ -111,7 +112,7 @@ export default function HomeScreen() {
           justifyContent: "center",
           alignItems: "flex-start",
           paddingBottom: 10,
-          marginBottom: spacing.medium,
+          marginBottom: spacing.small,
         }}
       >
         <Text style={typography.largeTitleMed}>Matur Nuwun </Text>
@@ -136,18 +137,18 @@ export default function HomeScreen() {
               justifyContent: "center",
               alignItems: "center",
               paddingHorizontal: 10,
-              columnGap: 9,
-              paddingVertical: 7,
+              columnGap: 5,
+              paddingVertical: 8,
               borderRadius: 5,
               backgroundColor:
-                selectedTab === "Terdekat" ? colors.brand.main : "transparent",
+                selectedTab === "Terdekat" ? colors.brand.main : "#FFF0EC",
             }}
             onPress={() => setSelectedTab("Terdekat")}
           >
             <MaterialIcons
               size={20}
-              name="stars"
-              color={selectedTab === "Terdekat" ? "white" : colors.warning}
+              name="near-me"
+              color={selectedTab === "Terdekat" ? "white" : colors.primary}
             />
             <Text
               style={[
@@ -168,18 +169,18 @@ export default function HomeScreen() {
               justifyContent: "center",
               alignItems: "center",
               paddingHorizontal: 10,
-              columnGap: 9,
+              columnGap: 5,
               paddingVertical: 7,
               borderRadius: 5,
               backgroundColor:
-                selectedTab === "Populer" ? colors.brand.main : "transparent",
+                selectedTab === "Populer" ? colors.brand.main : "#FFF0EC",
             }}
             onPress={() => setSelectedTab("Populer")}
           >
             <MaterialIcons
               size={20}
-              name="near-me"
-              color={selectedTab === "Populer" ? "white" : colors.primary}
+              name="stars"
+              color={selectedTab === "Populer" ? "white" : "#E29804"}
             />
             <Text
               style={[
@@ -393,7 +394,7 @@ export default function HomeScreen() {
             { color: colors.brand.main, marginBottom: spacing.medium },
           ]}
         >
-          <Link href="/detail">Terakhir Dilihat </Link>
+          Terakhir Dilihat
           {/* <Pressable
             onPress={() =>
               router.push({
@@ -409,22 +410,12 @@ export default function HomeScreen() {
           <View
             style={{
               width: "100%",
-              height: 300,
+              height: "auto",
               borderRadius: 5,
               flexDirection: "column",
               justifyContent: "center",
               marginBottom: spacing.medium,
-              paddingVertical: 5,
-              paddingHorizontal: 3,
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 1,
-              },
-              shadowOpacity: 0.22,
-              shadowRadius: 2.22,
-
-              elevation: 3,
+              backgroundColor: "#FFF0EC",
             }}
           >
             <FlatList
@@ -441,6 +432,7 @@ export default function HomeScreen() {
                     height: 140,
                     marginEnd: spacing.small,
                     objectFit: "cover",
+                    borderRadius: 5,
                   }}
                 />
               )}
@@ -449,7 +441,7 @@ export default function HomeScreen() {
             <View
               style={{
                 paddingHorizontal: 10,
-                paddingVertical: 5,
+                paddingVertical: 10,
               }}
             >
               {/* Title & Bookmark */}
@@ -533,7 +525,7 @@ export default function HomeScreen() {
                 Jl. Sidoluhur No.21, Laweyan, Kec. Laweyan, Kota Surakarta, Jawa
                 Tengah 57148{" "}
               </Text>
-
+              {/* 
               <Text
                 style={typography.caption1}
                 ellipsizeMode="tail"
@@ -543,29 +535,19 @@ export default function HomeScreen() {
                 dui quam. Erat est pulvinar enim sapien. Diam mi quam arcu
                 faucibus. Tristique cursus sit dui consequat sem tortor dolor
                 nunc vestibulum.
-              </Text>
+              </Text> */}
             </View>
           </View>
 
           <View
             style={{
-              width: "100%",
-              height: 300,
+              width: 300,
+              height: "auto",
               borderRadius: 5,
               flexDirection: "column",
               justifyContent: "center",
               marginBottom: spacing.medium,
-              paddingVertical: 5,
-              paddingHorizontal: 3,
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 1,
-              },
-              shadowOpacity: 0.22,
-              shadowRadius: 2.22,
-
-              elevation: 3,
+              backgroundColor: "#FFF0EC",
             }}
           >
             <FlatList
@@ -582,6 +564,7 @@ export default function HomeScreen() {
                     height: 140,
                     marginEnd: spacing.small,
                     objectFit: "cover",
+                    borderRadius: 5,
                   }}
                 />
               )}
@@ -589,20 +572,22 @@ export default function HomeScreen() {
 
             <View
               style={{
+                width: "100%",
                 paddingHorizontal: 10,
-                paddingVertical: 5,
+                paddingVertical: 10,
               }}
             >
               {/* Title & Bookmark */}
               <View
                 style={{
+                  width: "100%",
                   flexDirection: "row",
                   justifyContent: "space-between",
                   marginBottom: spacing.small,
                 }}
               >
                 <Text
-                  style={[typography.headline, { width: 300 }]}
+                  style={[typography.headline, { width: "80%" }]}
                   ellipsizeMode="tail"
                   numberOfLines={2}
                 >
@@ -674,7 +659,7 @@ export default function HomeScreen() {
                 Jl. Sidoluhur No.21, Laweyan, Kec. Laweyan, Kota Surakarta, Jawa
                 Tengah 57148{" "}
               </Text>
-
+              {/* 
               <Text
                 style={typography.caption1}
                 ellipsizeMode="tail"
@@ -684,7 +669,7 @@ export default function HomeScreen() {
                 dui quam. Erat est pulvinar enim sapien. Diam mi quam arcu
                 faucibus. Tristique cursus sit dui consequat sem tortor dolor
                 nunc vestibulum.
-              </Text>
+              </Text> */}
             </View>
           </View>
         </ScrollView>

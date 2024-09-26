@@ -1,9 +1,13 @@
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { createStackNavigator } from "@react-navigation/stack";
 
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+
+import SiteDetails from "./details/[id]";
+import SiteReview from "./details/reviews";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,10 +41,18 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+
         <Stack.Screen
           name="details/[id]"
           options={{
             headerTitle: "Detail Wisata",
+          }}
+        />
+
+        <Stack.Screen
+          name="details/reviews"
+          options={{
+            headerTitle: "Ulasan",
           }}
         />
       </Stack>

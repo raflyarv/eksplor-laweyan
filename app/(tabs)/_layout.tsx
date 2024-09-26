@@ -1,50 +1,49 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import { colors } from "@/theme/colors";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "blue",
+        title: "",
+        tabBarActiveTintColor: colors.brand.main,
         headerShown: false,
-        tabBarStyle: { height: 73, paddingBottom: 12 },
+        tabBarStyle: { height: 72, paddingBottom: 0 },
         tabBarItemStyle: { width: 50 },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Beranda",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="home" color={color} />
+            <MaterialIcons size={34} name="home" color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="Explore"
         options={{
-          title: "Jelajah",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="explore" color={color} />
+            <MaterialIcons size={34} name="explore" color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="Bookmark"
         options={{
-          title: "Simpan",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="bookmark" color={color} />
+            <MaterialIcons size={34} name="bookmark" color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="Profile"
         options={{
-          title: "Profil",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="account-circle" color={color} />
+            <MaterialIcons size={34} name="account-circle" color={color} />
           ),
         }}
       />
