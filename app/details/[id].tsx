@@ -16,19 +16,6 @@ interface OpeningHours {
   closeHour: string;
 }
 
-function getCurrentTime(): string {
-  const now = new Date();
-
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-
-  const formattedTime = `${hours.toString().padStart(2, "0")}.${minutes
-    .toString()
-    .padStart(2, "0")}`;
-
-  return formattedTime;
-}
-
 const dataJamOperasional =
   "Senin 10.00 - 17.00,Selasa 10.00 - 17.00,Rabu 10.00 - 17.00,Kamis 10.00 - 17.00,Jumat 10.00 - 17.00";
 

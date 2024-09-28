@@ -1,0 +1,232 @@
+[
+  {
+    "userID": "1",
+    "username": "batikLover123",
+    "email": "batiklover@example.com",
+    "nama": "Andi Sutrisno",
+    "password": "securePassword123",
+    "profilePic": "https://example.com/images/profiles/user1.jpg",
+    "status": "active",
+    "reviews": [
+      {
+        "reviewID": "101",
+        "locationID": "L001",
+        "name": "Kampung Batik Laweyan",
+        "rating": 5,
+        "title": "Amazing Experience!",
+        "comments": "The batik culture here is vibrant and beautiful.",
+        "visitedDate": "2024-09-01",
+        "createdAt": "2024-09-02T12:00:00Z",
+        "updatedAt": "2024-09-02T12:00:00Z"
+      },
+      {
+        "reviewID": "102",
+        "locationID": "L002",
+        "name": "Museum Batik",
+        "rating": 4,
+        "title": "Interesting History",
+        "comments": "Learned a lot about the history of batik.",
+        "visitedDate": "2024-08-15",
+        "createdAt": "2024-08-16T10:00:00Z",
+        "updatedAt": "2024-08-16T10:00:00Z"
+      }
+    ],
+    "bookmarks": [
+      {
+        "bookmarkID": "201",
+        "locationID": "L001",
+        "name": "Kampung Batik Laweyan",
+        "rating": 5,
+        "address": "Jl. Batik No. 1, Laweyan, Solo"
+      },
+      {
+        "bookmarkID": "202",
+        "locationID": "L003",
+        "name": "Batik Workshop",
+        "rating": 4,
+        "address": "Jl. Pahlawan No. 3, Solo"
+      }
+    ],
+    "logUsers": [
+      {
+        "activityName": "Login",
+        "timestamp": "2024-09-02T08:30:00Z"
+      },
+      {
+        "activityName": "Visited Kampung Batik Laweyan",
+        "timestamp": "2024-09-01T15:00:00Z"
+      }
+    ]
+  },
+  {
+    "userID": "2",
+    "username": "explorerJane",
+    "email": "jane.doe@example.com",
+    "nama": "Jane Doe",
+    "password": "anotherSecurePassword",
+    "profilePic": "https://example.com/images/profiles/user2.jpg",
+    "status": "active",
+    "reviews": [
+      {
+        "reviewID": "201",
+        "locationID": "L003",
+        "name": "Batik Workshop",
+        "rating": 5,
+        "title": "Fantastic Workshop!",
+        "comments": "Learned to make my own batik piece.",
+        "visitedDate": "2024-09-05",
+        "createdAt": "2024-09-06T14:00:00Z",
+        "updatedAt": "2024-09-06T14:00:00Z"
+      }
+    ],
+    "bookmarks": [
+      {
+        "bookmarkID": "301",
+        "locationID": "L002",
+        "name": "Museum Batik",
+        "rating": 4,
+        "address": "Jl. Sejarah No. 2, Solo"
+      }
+    ],
+    "logUsers": [
+      {
+        "activityName": "Login",
+        "timestamp": "2024-09-06T09:00:00Z"
+      },
+      {
+        "activityName": "Visited Batik Workshop",
+        "timestamp": "2024-09-05T10:00:00Z"
+      }
+    ]
+  },
+  {
+    "userID": "3",
+    "username": "travelBugMike",
+    "email": "mike.travel@example.com",
+    "nama": "Mike Johnson",
+    "password": "mikeSecure123",
+    "profilePic": "https://example.com/images/profiles/user3.jpg",
+    "status": "active",
+    "reviews": [
+      {
+        "reviewID": "301",
+        "locationID": "L001",
+        "name": "Kampung Batik Laweyan",
+        "rating": 5,
+        "title": "Incredible Art!",
+        "comments": "A must-visit for art enthusiasts.",
+        "visitedDate": "2024-09-10",
+        "createdAt": "2024-09-11T11:30:00Z",
+        "updatedAt": "2024-09-11T11:30:00Z"
+      }
+    ],
+    "bookmarks": [
+      {
+        "bookmarkID": "401",
+        "locationID": "L002",
+        "name": "Museum Batik",
+        "rating": 4,
+        "address": "Jl. Sejarah No. 2, Solo"
+      },
+      {
+        "bookmarkID": "402",
+        "locationID": "L004",
+        "name": "Batik Festival",
+        "rating": 5,
+        "address": "Jl. Festival No. 5, Solo"
+      }
+    ],
+    "logUsers": [
+      {
+        "activityName": "Login",
+        "timestamp": "2024-09-11T08:45:00Z"
+      },
+      {
+        "activityName": "Visited Kampung Batik Laweyan",
+        "timestamp": "2024-09-10T14:00:00Z"
+      }
+    ]
+  },
+  {
+    "userID": "4",
+    "username": "susanSmith",
+    "email": "susan.smith@example.com",
+    "nama": "Susan Smith",
+    "password": "susanSecure456",
+    "profilePic": "https://example.com/images/profiles/user4.jpg",
+    "status": "active",
+    "reviews": [
+      {
+        "reviewID": "401",
+        "locationID": "L005",
+        "name": "Batik Art Shop",
+        "rating": 4,
+        "title": "Lovely Batik Collection",
+        "comments": "A great place to buy authentic batik.",
+        "visitedDate": "2024-09-12",
+        "createdAt": "2024-09-13T09:00:00Z",
+        "updatedAt": "2024-09-13T09:00:00Z"
+      }
+    ],
+    "bookmarks": [
+      {
+        "bookmarkID": "501",
+        "locationID": "L001",
+        "name": "Kampung Batik Laweyan",
+        "rating": 5,
+        "address": "Jl. Batik No. 1, Laweyan, Solo"
+      }
+    ],
+    "logUsers": [
+      {
+        "activityName": "Login",
+        "timestamp": "2024-09-13T07:30:00Z"
+      },
+      {
+        "activityName": "Visited Batik Art Shop",
+        "timestamp": "2024-09-12T15:30:00Z"
+      }
+    ]
+  },
+  {
+    "userID": "5",
+    "username": "davidParker",
+    "email": "david.parker@example.com",
+    "nama": "David Parker",
+    "password": "davidSecure789",
+    "profilePic": "https://example.com/images/profiles/user5.jpg",
+    "status": "active",
+    "reviews": [
+      {
+        "reviewID": "501",
+        "locationID": "L003",
+        "name": "Batik Workshop",
+        "rating": 5,
+        "title": "Best Batik Class!",
+        "comments": "Had a fantastic time learning how to create batik.",
+        "visitedDate": "2024-09-08",
+        "createdAt": "2024-09-09T13:00:00Z",
+        "updatedAt": "2024-09-09T13:00:00Z"
+      }
+    ],
+    "bookmarks": [
+      {
+        "bookmarkID": "601",
+        "locationID": "L006",
+        "name": "Batik Painting Gallery",
+        "rating": 4,
+        "address": "Jl. Art No. 6, Solo"
+      }
+    ],
+    "logUsers": [
+      {
+        "activityName": "Login",
+        "timestamp": "2024-09-09T10:15:00Z"
+      },
+      {
+        "activityName": "Visited Batik Workshop",
+        "timestamp": "2024-09-08T11:00:00Z"
+      }
+    ]
+  }
+]
