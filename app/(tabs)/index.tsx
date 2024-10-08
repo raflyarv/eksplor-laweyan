@@ -240,6 +240,7 @@ export default function HomeScreen() {
 
               return (
                 <ImageCard
+                  key={index}
                   id={item.id}
                   name={item.name}
                   averageRating={rating}
@@ -264,6 +265,10 @@ export default function HomeScreen() {
               </View>
             ))}
       </ScrollView>
+
+      <Pressable onPress={() => router.push("/(no-auth)/login")}>
+        <Text> Click to Login </Text>
+      </Pressable>
 
       <View>
         <Text

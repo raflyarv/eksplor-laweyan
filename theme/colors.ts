@@ -1,6 +1,8 @@
 export const colors = {
   brand: {
     main: "#B85C38",
+    light: "#B97459",
+    semiwhite: "#fadfd4",
   },
   primary: "#2030CB",
   danger: "#C12020",

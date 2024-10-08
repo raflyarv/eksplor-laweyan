@@ -9,6 +9,9 @@ import { DynamicAvatar, RatingStar } from "../_components";
 import { Icon } from "react-native-elements";
 import { color } from "react-native-elements/dist/helpers";
 
+import site from "@/assets/dummy/sites.json";
+import { averageRating } from "@/utils/utils";
+
 // Perlu dibuat Models untuk cetakan
 interface OpeningHours {
   day: string;
@@ -83,6 +86,7 @@ export default function SiteDetails() {
   const [isOpenDropdown, setIsOpenDropwdown] = useState(false);
 
   const { id } = useLocalSearchParams<{ id: string }>();
+  const data: any = site.find((item) => item.id === id);
 
   const [starRating, setStarRating] = useState(0);
 
@@ -142,12 +146,10 @@ export default function SiteDetails() {
           >
             <MaterialIcons name="star" size={16} color={colors.warning} />
             <Text style={[typography.subhead, { color: colors.text.main }]}>
-              {" "}
-              4.5{" "}
+              {averageRating(data?.reviews)}
             </Text>
             <Text style={[typography.subhead, { color: colors.text.main }]}>
-              {" "}
-              (100){" "}
+              ({data.reviews.length})
             </Text>
           </View>
 
@@ -194,10 +196,7 @@ export default function SiteDetails() {
           }}
         >
           <MaterialIcons name="location-on" size={16} color={colors.danger} />
-          <Text style={typography.subhead}>
-            Jl. Setono No.22, Laweyan, Kec. Laweyan, Kota Surakarta, Jawa Tengah
-            57148
-          </Text>
+          <Text style={typography.subhead}>{data?.address}</Text>
         </View>
 
         <View

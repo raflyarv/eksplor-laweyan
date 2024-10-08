@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { createStackNavigator } from "@react-navigation/stack";
+// import { createStackNavigator } from "@react-navigation/stack";
 
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -53,6 +53,48 @@ export default function RootLayout() {
           name="details/reviews"
           options={{
             headerTitle: "Ulasan",
+          }}
+        />
+
+        <Stack.Screen
+          name="(no-auth)/login"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="(no-auth)/register"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="(no-auth)/verify-email"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="(no-auth)/forgot-password"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="(no-auth)/verify-code"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="(no-auth)/reset-password"
+          options={{
+            headerShown: false,
           }}
         />
       </Stack>
