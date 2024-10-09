@@ -19,6 +19,7 @@ import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
+import axios from "axios";
 
 const SUPPORTED_FORMATS = ["image/jpeg", "image/png", "image/jpg"];
 
@@ -87,8 +88,32 @@ const getMimeType = (uri: string | undefined): string => {
 };
 
 export default function Register() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const onSubmit = (values: registerFormSchema) => {
-    console.log(values);
+    setIsLoading(true);
+    try {
+      // const hashedPassword = await bcrypt.hash(values.confirmPassword, 10);
+      // const { password, confirmPassword, ...registerValues } = values;
+      // const sendData = { ...registerValues, password: confirmPassword };
+
+      // await axios.post("http://localhost:5000/api/admin", sendData, {
+      //   withCredentials: true,
+      //   headers: {
+      //     "Content-Type": "multipart/form-data", // Important: Set the correct content type
+      //   },
+      // });
+      console.log(values);
+      router.push({
+        pathname: "/verify-email",
+        params: { email: values.email },
+      });
+    } catch (err: any) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
+      // setIsOpen(true);
+    }
   };
 
   const {
@@ -272,7 +297,7 @@ export default function Register() {
             margin: 0,
             padding: 0,
           }}
-          onPress={() => router.push("/(no-auth)/login")}
+          onPress={() => router.push("/login")}
         >
           <Text
             style={[
@@ -294,7 +319,7 @@ export default function Register() {
           margin: 0,
           padding: 0,
         }}
-        onPress={() => router.push("/(no-auth)/verify-email")}
+        onPress={() => router.push("/verify-email")}
       >
         <Text
           style={[

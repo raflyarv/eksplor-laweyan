@@ -4,10 +4,16 @@ import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
-import { DynamicAvatar, RatingStar } from "../_components";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { DynamicAvatar, RatingStar, ReviewFormModal } from "../_components";
 import { Icon } from "react-native-elements";
-import { color } from "react-native-elements/dist/helpers";
 
 import site from "@/assets/dummy/sites.json";
 import { averageRating } from "@/utils/utils";
@@ -84,6 +90,8 @@ function getOpenCloseStatus(): {
 export default function SiteDetails() {
   const status = getOpenCloseStatus();
   const [isOpenDropdown, setIsOpenDropwdown] = useState(false);
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const data: any = site.find((item) => item.id === id);
@@ -620,7 +628,44 @@ export default function SiteDetails() {
             </View>
           </View>
         </ScrollView>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setIsModalVisible(true)}
+        >
+          <MaterialIcons name="edit-note" size={24} color={colors.brand.main} />
+          <Text style={[styles.buttonText, typography.subhead]}>
+            Buat Ulasan{" "}
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      <ReviewFormModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      />
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: colors.brand.main, // You can customize the color
+    borderRadius: 5,
+    paddingVertical: 5,
+    columnGap: 5,
+  },
+  plusSign: {
+    fontSize: 24,
+    marginRight: 5,
+  },
+  buttonText: {
+    fontWeight: 600,
+    color: colors.brand.main,
+  },
+});

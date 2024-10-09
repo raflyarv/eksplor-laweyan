@@ -6,6 +6,7 @@ import UniqueFactCard from "./UniqueFactCard";
 import ValidationModal from "./ValidationModal";
 import NoAuthInput from "./NoAuthInput";
 import ProfileImagePicker from "./ProfileImagePicker";
+import ReviewFormModal from "./ReviewFormModal";
 
 export {
   DynamicAvatar,
@@ -16,4 +17,5 @@ export {
   ValidationModal,
   NoAuthInput,
   ProfileImagePicker,
+  ReviewFormModal,
 };

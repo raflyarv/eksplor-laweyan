@@ -15,6 +15,7 @@ import { typography } from "@/theme/typography";
 import { colors } from "@/theme/colors";
 import { NoAuthInput, ValidationModal } from "../_components";
 import { router } from "expo-router";
+import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
 
 // Define a Zod schema
 const formSchema = z.object({
@@ -31,21 +32,25 @@ const initialValues: loginFormSchema = {
 };
 
 export default function Login() {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-
-  const [modalMessage, setModalMessage] = useState("");
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [operationSuccess, setOperationSuccess] = useState<boolean>(false); // Change this to simulate success or failure
 
   const onSubmit = (values: loginFormSchema) => {
-    if (values.username !== "raflyarv") {
-      setModalVisible(true);
-      setModalMessage(
-        "Silahkan coba lagi menggunakan username dan kata sandi yang sudah dibuat"
-      );
-      setModalTitle("Username/kata sandi salah!");
+    if (values.username === "raflyarv") {
+      setOperationSuccess(true);
+      router.push("/(tabs)/");
     } else {
-      console.log(values);
+      setOperationSuccess(false);
+    }
+    setModalVisible(true);
+  };
+
+  const toggleModal = () => {
+    if (operationSuccess === true) {
+      setModalVisible(false);
+      router.push("/(tabs)/index");
+    } else {
+      setModalVisible(false);
     }
   };
 
@@ -139,7 +144,7 @@ export default function Login() {
             margin: 0,
             padding: 0,
           }}
-          onPress={() => router.push("/(no-auth)/register")}
+          onPress={() => router.push("/register")}
         >
           <Text
             style={[
@@ -165,15 +170,24 @@ export default function Login() {
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
-
-        <ValidationModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          message={modalMessage}
-          title={modalTitle}
-          buttonMessage="Tutup"
-        />
       </View>
+
+      <IndicatorModal
+        isVisible={operationSuccess ? false : isModalVisible}
+        onClose={toggleModal}
+        imageUrl={operationSuccess ? "" : "password-not-same"}
+        title={
+          operationSuccess
+            ? "Email Telah Terverifikasi!"
+            : "Username/password salah!"
+        }
+        description={
+          operationSuccess
+            ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
+            : "Silahkan coba lagi atau melakukan lupa kata sandi."
+        }
+        isSuccess={operationSuccess}
+      />
     </View>
   );
 }

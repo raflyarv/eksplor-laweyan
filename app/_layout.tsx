@@ -1,14 +1,9 @@
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-// import { createStackNavigator } from "@react-navigation/stack";
 
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-
-import SiteDetails from "./details/[id]";
-import SiteReview from "./details/reviews";
-
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -57,42 +52,7 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name="(no-auth)/login"
-          options={{
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="(no-auth)/register"
-          options={{
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="(no-auth)/verify-email"
-          options={{
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="(no-auth)/forgot-password"
-          options={{
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="(no-auth)/verify-code"
-          options={{
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="(no-auth)/reset-password"
+          name="(no-auth)"
           options={{
             headerShown: false,
           }}

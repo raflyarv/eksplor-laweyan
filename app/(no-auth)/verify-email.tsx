@@ -1,4 +1,4 @@
-// import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import {
   View,
   Text,
@@ -14,6 +14,9 @@ import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
+import SendAgainButton from "../_components/SendAgainButton";
+import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
+import { useState } from "react";
 
 const formSchema = z.object({
   verificationCode: z.string({ required_error: "Kode Verifikasi Harus Diisi" }),
@@ -30,10 +33,28 @@ const initialValues: verifyEmailSchema = {
 };
 
 export default function VerifyEmail() {
-  //   const { id } = useLocalSearchParams();
+  const { email } = useLocalSearchParams();
+
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [operationSuccess, setOperationSuccess] = useState<boolean>(false); // Change this to simulate success or failure
 
   const onSubmit = (values: verifyEmailSchema) => {
-    console.log(values);
+    console.log(values.verificationCode);
+    if (values.verificationCode === "4411") {
+      setOperationSuccess(true);
+    } else {
+      setOperationSuccess(false);
+    }
+    setModalVisible(true);
+  };
+
+  const toggleModal = () => {
+    if (operationSuccess === true) {
+      setModalVisible(false);
+      router.push("/login");
+    } else {
+      setModalVisible(false);
+    }
   };
 
   const {
@@ -74,7 +95,7 @@ export default function VerifyEmail() {
           melalui email
           <Text style={{ fontWeight: 500, color: colors.brand.main }}>
             {" "}
-            tohirraflyy28@gmail.com{" "}
+            {email}{" "}
           </Text>
         </Text>
       </View>
@@ -83,6 +104,14 @@ export default function VerifyEmail() {
         name="verificationCode"
         setFieldValue={setFieldValue}
       />
+
+      <View
+        style={{
+          alignSelf: "flex-end",
+        }}
+      >
+        <SendAgainButton name="verifyEmail" />
+      </View>
 
       {/* Submit Button */}
       <View
@@ -100,7 +129,7 @@ export default function VerifyEmail() {
           margin: 0,
           padding: 0,
         }}
-        onPress={() => router.push("/(no-auth)/forgot-password")}
+        onPress={() => router.push("/forgot-password")}
       >
         <Text
           style={[
@@ -115,6 +144,23 @@ export default function VerifyEmail() {
           Forgot Password
         </Text>
       </Pressable>
+
+      <IndicatorModal
+        isVisible={isModalVisible}
+        onClose={toggleModal}
+        imageUrl={operationSuccess ? "email-verified" : "password-not-same"}
+        title={
+          operationSuccess
+            ? "Email Telah Terverifikasi!"
+            : "Kode Verifikasi Salah"
+        }
+        description={
+          operationSuccess
+            ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
+            : "Kode verifikasi yang Anda masukkan salah. Silahkan coba lagi."
+        }
+        isSuccess={operationSuccess}
+      />
     </View>
   );
 }
