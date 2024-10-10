@@ -7,6 +7,9 @@ import ValidationModal from "./ValidationModal";
 import NoAuthInput from "./NoAuthInput";
 import ProfileImagePicker from "./ProfileImagePicker";
 import ReviewFormModal from "./ReviewFormModal";
+import ReviewCards from "./ReviewCards";
+import MyReviewCards from "./MyReviewCards";
+import ConfirmationModal from "./ConfirmationModal";
 
 export {
   DynamicAvatar,
@@ -18,4 +21,7 @@ export {
   NoAuthInput,
   ProfileImagePicker,
   ReviewFormModal,
+  ReviewCards,
+  MyReviewCards,
+  ConfirmationModal,
 };

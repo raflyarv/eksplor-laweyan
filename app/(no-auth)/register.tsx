@@ -341,7 +341,7 @@ export default function Register() {
           alignSelf: "flex-end",
         }}
       >
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
       </View>

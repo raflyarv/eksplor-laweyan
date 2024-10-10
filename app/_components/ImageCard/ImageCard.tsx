@@ -28,7 +28,7 @@ export default function ImageCard({
       <Pressable
         onPress={() =>
           router.push({
-            pathname: "/details/[id]",
+            pathname: "/(auth)/details/[id]",
             params: { id: id },
           })
         }

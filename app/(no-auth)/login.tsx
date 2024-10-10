@@ -38,7 +38,7 @@ export default function Login() {
   const onSubmit = (values: loginFormSchema) => {
     if (values.username === "raflyarv") {
       setOperationSuccess(true);
-      router.push("/(tabs)/");
+      router.push("/(tabs)");
     } else {
       setOperationSuccess(false);
     }
@@ -48,7 +48,7 @@ export default function Login() {
   const toggleModal = () => {
     if (operationSuccess === true) {
       setModalVisible(false);
-      router.push("/(tabs)/index");
+      router.push("/(tabs)");
     } else {
       setModalVisible(false);
     }
@@ -167,7 +167,7 @@ export default function Login() {
           alignSelf: "flex-end",
         }}
       >
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
       </View>

@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { DynamicAvatar, RatingStar, ReviewFormModal } from "../_components";
+import { DynamicAvatar, RatingStar, ReviewFormModal } from "@/app/_components";
 import { Icon } from "react-native-elements";
 
 import site from "@/assets/dummy/sites.json";
@@ -96,7 +96,7 @@ export default function SiteDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const data: any = site.find((item) => item.id === id);
 
-  const [starRating, setStarRating] = useState(0);
+  // const [starRating, setStarRating] = useState(0);
 
   return (
     <ScrollView
@@ -106,10 +106,25 @@ export default function SiteDetails() {
     >
       <View
         style={{
+          width: "100%",
+          marginVertical: spacing.medium,
+        }}
+      >
+        <TouchableOpacity onPress={() => router.back()}>
+          <MaterialIcons
+            name="arrow-back"
+            color={colors.brand.main}
+            size={32}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View
+        style={{
           width: 200,
           height: 250,
           backgroundColor: "grey",
-          marginTop: spacing.medium,
+          marginBottom: spacing.medium,
         }}
       ></View>
 
@@ -485,7 +500,7 @@ export default function SiteDetails() {
               <Icon
                 name="circle"
                 type="material"
-                size={10}
+                size={8}
                 color={colors.disable}
               />
               <Text style={[typography.footnote]}> 10 bulan yang lalu </Text>
@@ -511,13 +526,10 @@ export default function SiteDetails() {
                 gap: 5,
               }}
             >
-              <Text style={[typography.subhead, { fontWeight: "600" }]}>
-                Judul Review !{" "}
-              </Text>
               <Text
                 style={[typography.subhead]}
                 ellipsizeMode="tail"
-                numberOfLines={4}
+                numberOfLines={5}
               >
                 Lorem ipsuum bismillah doa untuk semua hari ini pada pagi ini
                 cemungut eakkkkkk Lorem ipsuum bismillah doa untuk semua hari
@@ -641,6 +653,8 @@ export default function SiteDetails() {
       </View>
 
       <ReviewFormModal
+        reviewId="111223"
+        siteName="Nama Tempat Wisata"
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
       />

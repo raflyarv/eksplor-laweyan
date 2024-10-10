@@ -38,16 +38,9 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name="details/[id]"
+          name="(auth)"
           options={{
-            headerTitle: "Detail Wisata",
-          }}
-        />
-
-        <Stack.Screen
-          name="details/reviews"
-          options={{
-            headerTitle: "Ulasan",
+            headerShown: false,
           }}
         />
 

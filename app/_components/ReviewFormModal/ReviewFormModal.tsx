@@ -1,7 +1,7 @@
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -17,34 +17,91 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 
+import * as z from "zod";
+import { useFormik } from "formik";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+
+// Define the Zod schema for review form validation
+const formSchema = z.object({
+  rating: z
+    .number({ required_error: "Rating harus diisi." })
+    .min(1, { message: "Rating minimal 1." })
+    .max(5, { message: "Rating maksimal 5." }),
+  review: z
+    .string({ required_error: "Ulasan harus diisi." })
+    .min(10, { message: "Ulasan minimal 10 karakter." }),
+  visitedDate: z.date({ required_error: "Tanggal kunjungan harus diisi." }),
+});
+
+type ReviewFormSchema = z.infer<typeof formSchema>;
+
 interface ReviewFormModalProps {
+  reviewId: string;
   isVisible: boolean; // for modal visibility
   onClose: () => void; // function to close the modal
+  siteName: string;
+  ratingScore?: number | 0;
+  content?: string;
+  visitedDate?: Date | undefined;
 }
 
 export default function ReviewFormModal({
+  reviewId,
+  siteName,
+  ratingScore,
+  content,
+  visitedDate,
   isVisible,
   onClose,
 }: ReviewFormModalProps) {
-  const [rating, setRating] = useState(0);
-  const [review, setReview] = useState("");
-
-  const stars = Array(5).fill(0);
-
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  // Handle date picker change
-  const onChange = (
-    event: DateTimePickerEvent,
-    selectedDate?: Date | undefined
-  ) => {
-    const currentDate = selectedDate || date;
-    setShowDatePicker(false); // Close the picker on Android after selection
-    setDate(currentDate);
+  const initialValues: ReviewFormSchema = {
+    rating: ratingScore ?? 0, // Use provided default ratingScore, or default to 0
+    review: content ?? "", // Use provided default content, or default to empty string
+    visitedDate: visitedDate ?? new Date(), // Use provided visited date, or default to current date
   };
 
-  // Show the date picker
+  const {
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    errors,
+    touched,
+    values,
+    setFieldValue,
+  } = useFormik({
+    initialValues,
+    validationSchema: toFormikValidationSchema(formSchema),
+    onSubmit: (values) => {
+      console.log("Review form data:", values); // Log form data on submission
+      // Here, you can handle the submission (e.g., send to an API)
+    },
+  });
+
+  // const [rating, setRating] = useState<number>(0);
+  // const [review, setReview] = useState<string>("");
+  const [date, setDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+
+  const stars = Array(5).fill(values.rating);
+
+  // // Use useEffect to set default values when modal opens or props change
+  // useEffect(() => {
+  //   if (isVisible) {
+  //     setRating(ratingScore ?? 0); // Default to 0 if ratingScore is undefined
+  //     setReview(content ?? ""); // Default to empty string if content is undefined
+  //     setDate(visitedDate ?? new Date()); // Default to today's date if visitedDate is undefined
+  //   }
+  // }, [isVisible, ratingScore, content, visitedDate]);
+
+  // Handle date picker change
+  const onChange = (_: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(false); // Close the picker
+    setDate(currentDate);
+    setFieldValue("visitedDate", selectedDate);
+  };
+
+  // Show date picker
   const showDatePickerModal = () => {
     setShowDatePicker(true);
   };
@@ -91,7 +148,7 @@ export default function ReviewFormModal({
                 },
               ]}
             >
-              Rumah Batik Laweyan
+              {siteName}
             </Text>
             <View style={styles.starContainer}>
               {stars.map((_, index) => {
@@ -101,13 +158,17 @@ export default function ReviewFormModal({
                   <TouchableOpacity
                     key={index}
                     onPress={() => {
-                      setRating(starNumber);
+                      setFieldValue("rating", starNumber);
                     }}
                   >
                     <Icon
-                      name={starNumber <= rating ? "star" : "star-border"}
+                      name={
+                        starNumber <= values.rating ? "star" : "star-border"
+                      }
                       type="material"
-                      color={starNumber <= rating ? colors.warning : "#B0B0B0"}
+                      color={
+                        starNumber <= values.rating ? colors.warning : "#B0B0B0"
+                      }
                       size={36}
                     />
                   </TouchableOpacity>
@@ -115,6 +176,8 @@ export default function ReviewFormModal({
               })}
             </View>
           </View>
+
+          {errors.rating && <Text style={{}}>{errors.rating}</Text>}
 
           <View
             style={{
@@ -124,13 +187,34 @@ export default function ReviewFormModal({
             }}
           >
             <TextInput
-              style={styles.textInput}
+              style={[
+                styles.textInput,
+                {
+                  borderColor: errors.review
+                    ? colors.danger
+                    : colors.brand.main,
+                },
+              ]}
               placeholder="Tulis ulasan Anda"
               multiline={true}
               numberOfLines={6}
-              value={review}
-              onChangeText={setReview}
+              value={values.review}
+              onChangeText={handleChange("review")}
             />
+
+            {errors.review && (
+              <Text
+                style={[
+                  typography.footnote,
+                  {
+                    color: colors.danger,
+                    paddingHorizontal: 5,
+                  },
+                ]}
+              >
+                {errors.review}
+              </Text>
+            )}
           </View>
 
           <View
@@ -154,13 +238,13 @@ export default function ReviewFormModal({
                 />
               </TouchableOpacity>
               <Text style={(styles.selectedDate, typography.subhead)}>
-                {date.toLocaleDateString()}{" "}
+                {values.visitedDate.toLocaleDateString()}{" "}
               </Text>
             </View>
 
             {showDatePicker && (
               <DateTimePicker
-                value={date}
+                value={values.visitedDate}
                 mode="date"
                 display="default"
                 onChange={onChange}
@@ -182,6 +266,7 @@ export default function ReviewFormModal({
                 borderRadius: 5,
                 paddingVertical: 10,
               }}
+              onPress={() => handleSubmit()}
             >
               <Text style={[typography.subhead, { color: "white" }]}>
                 {" "}
@@ -198,7 +283,7 @@ export default function ReviewFormModal({
 const styles = StyleSheet.create({
   textInput: {
     height: 120,
-    borderColor: colors.brand.main,
+    marginBottom: 5,
     borderWidth: 2,
     borderRadius: 5,
     paddingVertical: 10,
