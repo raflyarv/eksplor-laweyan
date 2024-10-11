@@ -113,108 +113,77 @@ export default function Explore() {
   const [categoryFilter, setCategoryFilter] = useState("");
 
   return (
-    <View style={styles.container}>
-      <MapView
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        initialRegion={INITIAL_REGION}
-        showsUserLocation
-        // ref={mapRef}
-        // onRegionChangeComplete={onRegionChange}
-      >
-        {/* <Polyline
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          initialRegion={INITIAL_REGION}
+          showsUserLocation
+          // ref={mapRef}
+          // onRegionChangeComplete={onRegionChange}
+        >
+          {/* <Polyline
           coordinates={[
             { latitude: -7.569718650419353, longitude: 110.79690882605378 },
             { latitude: -7.570019098590299, longitude: 110.79563008293876 },
           ]}
         /> */}
-        {markers.map((marker, index) => (
-          <Marker
-            key={index}
-            coordinate={marker.coordinates}
-            onPress={() => handleMapPress(marker.coordinates)}
-          >
-            <Callout>
-              <View style={{ padding: 10 }}>
-                <Text> {marker.name} </Text>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
-      </MapView>
+          {markers.map((marker, index) => (
+            <Marker
+              key={index}
+              coordinate={marker.coordinates}
+              onPress={() => handleMapPress(marker.coordinates)}
+            >
+              <Callout>
+                <View style={{ padding: 10 }}>
+                  <Text> {marker.name} </Text>
+                </View>
+              </Callout>
+            </Marker>
+          ))}
+        </MapView>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <TextInput
-            style={[styles.input, typography]}
-            placeholder="Pencarian"
-            placeholderTextColor={colors.disable}
-          />
-          <MaterialIcons name="search" size={32} color={colors.brand.main} />
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <TextInput
+              style={[styles.input, typography]}
+              placeholder="Pencarian"
+              placeholderTextColor={colors.disable}
+            />
+            <MaterialIcons name="search" size={32} color={colors.brand.main} />
+          </View>
+
+          <View
+            style={{
+              width: 140,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "white",
+              borderRadius: 5,
+              paddingVertical: 8,
+              gap: 3,
+            }}
+          >
+            <MaterialIcons name="tune" size={20} color={colors.brand.main} />
+            <Text style={[typography.subhead, { color: colors.brand.main }]}>
+              {" "}
+              Sort/Filter{" "}
+            </Text>
+          </View>
         </View>
 
-        <View
-          style={{
-            width: 140,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "white",
-            borderRadius: 5,
-            paddingVertical: 8,
-            gap: 3,
-          }}
-        >
-          <MaterialIcons name="tune" size={20} color={colors.brand.main} />
-          <Text style={[typography.subhead, { color: colors.brand.main }]}>
-            {" "}
-            Sort/Filter{" "}
-          </Text>
-        </View>
-
-        {/* 
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap",
-          }}
-        >
-          <Picker
-            selectedValue={sortOption}
-            onValueChange={(itemValue) => {
-              setSortOption(itemValue);
-            }}
-            style={styles.picker}
-          >
-            <Picker.Item label="Rating" value="rating" />
-            <Picker.Item label="Most Popular" value="popularity" />
-            <Picker.Item label="Nearest" value="nearest" />
-          </Picker>
-
-          <Picker
-            selectedValue={sortOption}
-            onValueChange={(itemValue) => {
-              setSortOption(itemValue);
-            }}
-            style={styles.picker}
-          >
-            <Picker.Item label="All Categories" value="rating" />
-            <Picker.Item label="Most Popular" value="popularity" />
-            <Picker.Item label="Nearest" value="nearest" />
-          </Picker>
-        </View> */}
+        {/* <SlidingContainer /> */}
       </View>
-
-      <SlidingContainer />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },

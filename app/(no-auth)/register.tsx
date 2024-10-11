@@ -6,12 +6,17 @@ import {
   Button,
   TouchableOpacity,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { z } from "zod";
 import { useFormik } from "formik";
-import { NoAuthInput, ProfileImagePicker } from "../_components";
+import {
+  FullScreenLoading,
+  NoAuthInput,
+  ProfileImagePicker,
+} from "../_components";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -20,20 +25,13 @@ import { typography } from "@/theme/typography";
 import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
 import axios from "axios";
+import { useModal } from "../_hooks/context/ModalContext";
 
-const SUPPORTED_FORMATS = ["image/jpeg", "image/png", "image/jpg"];
+// const SUPPORTED_FORMATS = ["image/jpeg", "image/png", "image/jpg"];
 
 const formSchema = z
   .object({
-    profileImage: z
-      .instanceof(File)
-      .nullable()
-      .refine(
-        (file) => file === null || SUPPORTED_FORMATS.includes(file.type),
-        {
-          message: "Tipe file tidak didukung.",
-        }
-      ),
+    profileImage: z.any().nullable(),
 
     username: z.string({ required_error: "Username Harus Diisi" }),
     email: z
@@ -58,7 +56,7 @@ const formSchema = z
 type registerFormSchema = z.infer<typeof formSchema>;
 
 const initialValues: registerFormSchema = {
-  profileImage: null as File | null,
+  profileImage: null,
   username: "",
   fullName: "",
   password: "",
@@ -66,50 +64,59 @@ const initialValues: registerFormSchema = {
   email: "",
 };
 
-const getMimeType = (uri: string | undefined): string => {
-  if (!uri) {
-    // Return a default MIME type or handle the error
-    console.warn("URI is undefined");
-    return "application/octet-stream"; // Fallback MIME type
-  }
-
-  const extension = uri.split(".").pop()?.toLowerCase(); // Use optional chaining to handle undefined
-  switch (extension) {
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg";
-    case "png":
-      return "image/png";
-    case "gif":
-      return "image/gif";
-    default:
-      return "application/octet-stream"; // Fallback type
-  }
-};
-
 export default function Register() {
+  const { setModal } = useModal();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onSubmit = (values: registerFormSchema) => {
+  const onSubmit = async (values: registerFormSchema) => {
     setIsLoading(true);
-    try {
-      // const hashedPassword = await bcrypt.hash(values.confirmPassword, 10);
-      // const { password, confirmPassword, ...registerValues } = values;
-      // const sendData = { ...registerValues, password: confirmPassword };
 
-      // await axios.post("http://localhost:5000/api/admin", sendData, {
-      //   withCredentials: true,
-      //   headers: {
-      //     "Content-Type": "multipart/form-data", // Important: Set the correct content type
-      //   },
-      // });
-      console.log(values);
-      router.push({
-        pathname: "/verify-email",
-        params: { email: values.email },
-      });
+    const { profileImage, username, fullName, confirmPassword, email } = values;
+
+    try {
+      const formData = new FormData();
+
+      const fileExtension = values.profileImage?.uri.split(".").pop();
+
+      // Append the image if it exists
+      if (profileImage) {
+        formData.append("profileImage", {
+          uri: values.profileImage?.uri,
+          name: `${values.username}-profileImage.${fileExtension}`, // You can customize the file name
+          type: values.profileImage?.mimeType, // Set the appropriate MIME type
+        } as any);
+      }
+
+      // Append the other form fields
+      formData.append("username", username);
+      formData.append("fullName", fullName);
+      formData.append("password", confirmPassword);
+      formData.append("email", email);
+
+      const response = await axios.post(
+        "http://192.168.100.18:5000/api/user/register",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Important: Set the correct content type
+          },
+        }
+      );
+
+      if (response.status === 201) {
+        router.push({
+          pathname: "/verify-email",
+          params: { email: values.email },
+        });
+      }
     } catch (err: any) {
-      console.log(err);
+      console.log(err.status);
+      setModal(
+        "Email/username sudah terdaftar",
+        "Silahkan coba lagi menggunakan username dan email yang berbeda",
+        "password-not-same", // Reference to an image in the imageMap
+        "Ok"
+      );
     } finally {
       setIsLoading(false);
       // setIsOpen(true);
@@ -135,169 +142,205 @@ export default function Register() {
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
+      base64: false,
     });
 
     if (!result.canceled) {
-      // Create a File object
-      const fileUri = result.assets[0].uri; // Access the uri of the selected image
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-
-      // Create a File object (make sure your environment supports this)
-      const mimeType = getMimeType(fileUri);
-      const file = new File(
-        [await fetch(fileUri).then((res) => res.blob())],
-        fileInfo.uri, // ini nanti diganti jadi profile-images/[nama-user]
-        { type: mimeType }
-      );
-
-      // Set the file using setFieldValue
-      setFieldValue("profileImage", file);
+      // Set the image URI to display it in the UI (optional)
       setImage(result.assets[0].uri);
+      setFieldValue("profileImage", result.assets[0]);
     } else {
       console.log("Image selection was canceled");
     }
   };
+
   return (
-    <View style={styles.mainContainer}>
-      <Text
-        style={[
-          typography.title1Bold,
-          {
-            marginBottom: spacing.medium,
-          },
-        ]}
-      >
-        Buat Akun{" "}
-      </Text>
-      <View style={styles.container}>
-        {image ? (
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: image }} style={styles.image} />
-            <TouchableOpacity
-              onPress={() => setImage(null)}
-              style={styles.clearButton}
-            >
-              <MaterialIcons name="delete" size={24} color={colors.danger} />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View
+    <>
+      <View style={styles.mainContainer}>
+        <View
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.back()}
             style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
+              width: "20%",
             }}
           >
-            <TouchableOpacity onPress={pickImage}>
-              <MaterialIcons
-                name="account-circle"
-                size={150}
-                color={colors.disable}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={pickImage}
+            <MaterialIcons
+              name="arrow-back"
+              size={32}
+              color={colors.brand.main}
+            />
+          </TouchableOpacity>
+          <Text
+            style={[
+              typography.title2Bold,
+              {
+                width: "66%",
+                marginBottom: spacing.medium,
+              },
+            ]}
+          >
+            Buat Akun{" "}
+          </Text>
+        </View>
+
+        <View style={styles.container}>
+          {image ? (
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: image }} style={styles.image} />
+              <TouchableOpacity
+                onPress={() => setImage(null)}
+                style={styles.clearButton}
+              >
+                <MaterialIcons name="delete" size={24} color={colors.danger} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View
               style={{
                 display: "flex",
-                flexDirection: "row",
+                flexDirection: "column",
+                justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: colors.brand.main,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 5,
               }}
             >
-              <MaterialIcons name="upload-file" size={24} color="white" />
-              <Text style={[typography.subhead, { color: "white" }]}>
-                {" "}
-                Upload Gambar{" "}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+              <TouchableOpacity onPress={pickImage}>
+                <MaterialIcons
+                  name="account-circle"
+                  size={150}
+                  color={colors.disable}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={pickImage}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: colors.brand.main,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 5,
+                }}
+              >
+                <MaterialIcons name="upload-file" size={24} color="white" />
+                <Text style={[typography.subhead, { color: "white" }]}>
+                  {" "}
+                  Upload Gambar{" "}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
-      <NoAuthInput
-        type="text"
-        placeholder="Buat Username Anda"
-        onChangeText={handleChange("username")}
-        onBlur={handleBlur("username")}
-        value={values.username}
-        error={errors.username}
-        touched={touched.username}
-        placeholderTextColor={colors.brand.light}
-        inputMode="username"
-      />
+        <NoAuthInput
+          type="text"
+          placeholder="Buat Username Anda"
+          onChangeText={handleChange("username")}
+          onBlur={handleBlur("username")}
+          value={values.username}
+          error={errors.username}
+          touched={touched.username}
+          placeholderTextColor={colors.brand.light}
+          inputMode="username"
+        />
 
-      <NoAuthInput
-        type="text"
-        placeholder="Masukkan Alamat Email Anda"
-        onChangeText={handleChange("email")}
-        onBlur={handleBlur("email")}
-        value={values.email}
-        error={errors.email}
-        touched={touched.email}
-        placeholderTextColor={colors.brand.light}
-        inputMode="email"
-      />
+        <NoAuthInput
+          type="text"
+          placeholder="Masukkan Alamat Email Anda"
+          onChangeText={handleChange("email")}
+          onBlur={handleBlur("email")}
+          value={values.email}
+          error={errors.email}
+          touched={touched.email}
+          placeholderTextColor={colors.brand.light}
+          inputMode="email"
+        />
 
-      <NoAuthInput
-        type="text"
-        placeholder="Masukkan Nama Lengkap Anda"
-        onChangeText={handleChange("fullName")}
-        onBlur={handleBlur("fullName")}
-        value={values.fullName}
-        error={errors.fullName}
-        touched={touched.fullName}
-        placeholderTextColor={colors.brand.light}
-        inputMode="fullName"
-      />
+        <NoAuthInput
+          type="text"
+          placeholder="Masukkan Nama Lengkap Anda"
+          onChangeText={handleChange("fullName")}
+          onBlur={handleBlur("fullName")}
+          value={values.fullName}
+          error={errors.fullName}
+          touched={touched.fullName}
+          placeholderTextColor={colors.brand.light}
+          inputMode="fullName"
+        />
 
-      <NoAuthInput
-        type="password"
-        placeholder="Buat Kata Sandi"
-        onChangeText={handleChange("password")}
-        onBlur={handleBlur("password")}
-        value={values.password}
-        error={errors.password}
-        touched={touched.password}
-        placeholderTextColor={colors.brand.light}
-      />
+        <NoAuthInput
+          type="password"
+          placeholder="Buat Kata Sandi"
+          onChangeText={handleChange("password")}
+          onBlur={handleBlur("password")}
+          value={values.password}
+          error={errors.password}
+          touched={touched.password}
+          placeholderTextColor={colors.brand.light}
+        />
 
-      <NoAuthInput
-        type="password"
-        placeholder="Konfirmasi Kata Sandi"
-        onChangeText={handleChange("confirmPassword")}
-        onBlur={handleBlur("confirmPassword")}
-        value={values.confirmPassword}
-        error={errors.confirmPassword}
-        touched={touched.confirmPassword}
-        placeholderTextColor={colors.brand.light}
-      />
+        <NoAuthInput
+          type="password"
+          placeholder="Konfirmasi Kata Sandi"
+          onChangeText={handleChange("confirmPassword")}
+          onBlur={handleBlur("confirmPassword")}
+          value={values.confirmPassword}
+          error={errors.confirmPassword}
+          touched={touched.confirmPassword}
+          placeholderTextColor={colors.brand.light}
+        />
 
-      <View
-        style={{
-          width: "100%",
-          marginBottom: 15,
-          display: "flex",
-          flexDirection: "row",
-        }}
-      >
-        <Text style={[typography.footnote, { fontWeight: 500 }]}>
-          {" "}
-          Sudah memiliki akun?{" "}
-        </Text>
+        <View
+          style={{
+            width: "100%",
+            marginBottom: 15,
+            display: "flex",
+            flexDirection: "row",
+          }}
+        >
+          <Text style={[typography.footnote, { fontWeight: 500 }]}>
+            {" "}
+            Sudah memiliki akun?{" "}
+          </Text>
+          <Pressable
+            style={{
+              margin: 0,
+              padding: 0,
+            }}
+            onPress={() => router.push("/login")}
+          >
+            <Text
+              style={[
+                typography.footnote,
+                {
+                  textDecorationLine: "underline",
+                  color: colors.brand.main,
+                  fontWeight: 500,
+                },
+              ]}
+            >
+              Masuk di sini
+            </Text>
+          </Pressable>
+        </View>
+
         <Pressable
           style={{
             margin: 0,
             padding: 0,
           }}
-          onPress={() => router.push("/login")}
+          onPress={() => router.push("/verify-email")}
         >
           <Text
             style={[
@@ -309,43 +352,26 @@ export default function Register() {
               },
             ]}
           >
-            Masuk di sini
+            Verifikasi Email
           </Text>
         </Pressable>
-      </View>
 
-      <Pressable
-        style={{
-          margin: 0,
-          padding: 0,
-        }}
-        onPress={() => router.push("/verify-email")}
-      >
-        <Text
-          style={[
-            typography.footnote,
-            {
-              textDecorationLine: "underline",
-              color: colors.brand.main,
-              fontWeight: 500,
-            },
-          ]}
+        {/* Submit Button */}
+        <View
+          style={{
+            alignSelf: "flex-end",
+          }}
         >
-          Verifikasi Email
-        </Text>
-      </Pressable>
-
-      {/* Submit Button */}
-      <View
-        style={{
-          alignSelf: "flex-end",
-        }}
-      >
-        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleSubmit()}
+          >
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+      {isLoading && <FullScreenLoading />}
+    </>
   );
 }
 

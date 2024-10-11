@@ -11,14 +11,13 @@ export default function VerificationInput({
   name,
   setFieldValue,
 }: VerificationInput) {
-  const [otp, setOtp] = useState<string[]>(["", "", "", ""]); // State for OTP digits
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]); // State for OTP digits
   const inputs = useRef<(TextInput | null)[]>([]); // Reference to TextInput components
 
   useEffect(() => {
-    if (otp.length === 4 && otp.every((digit) => digit !== "")) {
+    if (otp.length === 6 && otp.every((digit) => digit !== "")) {
       // Check if all fields are filled
       const otpString = otp.join("");
-      console.log(otpString);
       setFieldValue(name, otpString); // Update the form value with the OTP string
     }
   }, [otp]); // Runs when otp changes
@@ -32,7 +31,7 @@ export default function VerificationInput({
     setOtp(newOtp);
 
     // Move to the next input box automatically if input is a digit
-    if (text && index < 3) {
+    if (text && index < 5) {
       inputs.current[index + 1]?.focus(); // Use optional chaining to prevent errors
     }
 
@@ -80,7 +79,7 @@ const styles = StyleSheet.create({
   otpInput: {
     backgroundColor: colors.brand.semiwhite,
     borderRadius: 10,
-    width: 70,
+    width: 50,
     height: 80,
     fontSize: 24,
     color: "whiite",

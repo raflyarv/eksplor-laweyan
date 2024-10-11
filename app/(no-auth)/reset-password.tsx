@@ -11,8 +11,10 @@ import { colors } from "@/theme/colors";
 import { useFormik } from "formik";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { z } from "zod";
-import { NoAuthInput } from "../_components";
-import { router } from "expo-router";
+import { FullScreenLoading, IndicatorModal, NoAuthInput } from "../_components";
+import { router, useLocalSearchParams } from "expo-router";
+import axios from "axios";
+import { useState } from "react";
 
 const formSchema = z
   .object({
@@ -43,10 +45,43 @@ const initialValues: resetPasswordSchema = {
 };
 
 export default function ResetPassword() {
-  //   const { id } = useLocalSearchParams();
+  const { email } = useLocalSearchParams();
 
-  const onSubmit = (values: resetPasswordSchema) => {
-    console.log(values);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [operationSuccess, setOperationSuccess] = useState<boolean>(false); // Change this to simulate success or fail
+
+  const onSubmit = async (values: resetPasswordSchema) => {
+    setIsLoading(true);
+
+    try {
+      const requestBody = {
+        email: email,
+        newPassword: values.confirmPassword,
+      };
+
+      const response = await axios.post(
+        "http://192.168.100.18:5000/api/user/reset-password",
+        requestBody
+      );
+      setModalVisible(true);
+      setOperationSuccess(true);
+    } catch (err: any) {
+      setModalVisible(true);
+      setOperationSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleModal = () => {
+    if (operationSuccess === true) {
+      setModalVisible(false);
+      router.push("/login");
+    } else {
+      setModalVisible(false);
+    }
   };
 
   const {
@@ -64,88 +99,83 @@ export default function ResetPassword() {
   });
 
   return (
-    <View
-      style={[
-        styles.mainContainer,
-        {
-          paddingHorizontal: 20,
-        },
-      ]}
-    >
+    <>
       <View
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          marginBottom: 20,
-          rowGap: 10,
-        }}
+        style={[
+          styles.mainContainer,
+          {
+            paddingHorizontal: 20,
+          },
+        ]}
       >
-        <Text style={[typography.title2Bold]}>Reset Password </Text>
-        <Text style={[typography.footnote]}>
-          Buat kata sandi baru dengan min. 8 karakter, terdapat huruf besar dan
-          kecil, serta karakter unik atau numerikal.
-          {/* <Text style={{ fontWeight: 500, color: colors.brand.main }}>
-            {" "}
-            tohirraflyy28@gmail.com{" "}
-          </Text> */}
-        </Text>
-      </View>
-
-      <NoAuthInput
-        type="password"
-        placeholder="Buat Kata Sandi Baru"
-        onChangeText={handleChange("password")}
-        onBlur={handleBlur("password")}
-        value={values.password}
-        error={errors.password}
-        touched={touched.password}
-        placeholderTextColor={colors.brand.light}
-      />
-
-      <NoAuthInput
-        type="password"
-        placeholder="Konfirmasi Kata Sandi"
-        onChangeText={handleChange("confirmPassword")}
-        onBlur={handleBlur("confirmPassword")}
-        value={values.confirmPassword}
-        error={errors.confirmPassword}
-        touched={touched.confirmPassword}
-        placeholderTextColor={colors.brand.light}
-      />
-
-      {/* Submit Button */}
-      <View
-        style={{
-          alignSelf: "flex-end",
-        }}
-      >
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Buat Kata Sandi</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* <Pressable
-        style={{
-          margin: 0,
-          padding: 0,
-        }}
-        onPress={() => router.push("/(no-auth)/verify-code")}
-      >
-        <Text
-          style={[
-            typography.footnote,
-            {
-              textDecorationLine: "underline",
-              color: colors.brand.main,
-              fontWeight: 500,
-            },
-          ]}
+        <View
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            marginBottom: 20,
+            rowGap: 10,
+          }}
         >
-          Verifikasi Kode
-        </Text>
-      </Pressable> */}
-    </View>
+          <Text style={[typography.title2Bold]}>Reset Password </Text>
+          <Text style={[typography.footnote]}>
+            Buat kata sandi baru dengan min. 8 karakter, terdapat huruf besar
+            dan kecil, serta karakter unik atau numerikal.
+          </Text>
+        </View>
+
+        <NoAuthInput
+          type="password"
+          placeholder="Buat Kata Sandi Baru"
+          onChangeText={handleChange("password")}
+          onBlur={handleBlur("password")}
+          value={values.password}
+          error={errors.password}
+          touched={touched.password}
+          placeholderTextColor={colors.brand.light}
+        />
+
+        <NoAuthInput
+          type="password"
+          placeholder="Konfirmasi Kata Sandi"
+          onChangeText={handleChange("confirmPassword")}
+          onBlur={handleBlur("confirmPassword")}
+          value={values.confirmPassword}
+          error={errors.confirmPassword}
+          touched={touched.confirmPassword}
+          placeholderTextColor={colors.brand.light}
+        />
+
+        {/* Submit Button */}
+        <View
+          style={{
+            alignSelf: "flex-end",
+          }}
+        >
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleSubmit()}
+          >
+            <Text style={styles.buttonText}>Buat Kata Sandi</Text>
+          </TouchableOpacity>
+        </View>
+
+        <IndicatorModal
+          isVisible={isModalVisible}
+          onClose={toggleModal}
+          imageUrl={operationSuccess ? "email-verified" : "password-not-same"}
+          title={
+            operationSuccess ? "Reset Password Berhasil!" : "Terjadi Kesalahan"
+          }
+          description={
+            operationSuccess
+              ? "Silahkan lakukan login kembali dengan kata sandi yang baru untuk mengakses aplikasi"
+              : `Silahkan Coba Lagi`
+          }
+        />
+      </View>
+      {isLoading && <FullScreenLoading />}
+    </>
   );
 }
 

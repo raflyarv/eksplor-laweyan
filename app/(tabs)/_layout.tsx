@@ -1,9 +1,37 @@
-import React from "react";
-import { Tabs } from "expo-router";
+import React, { useEffect } from "react";
+import {
+  router,
+  Tabs,
+  useNavigation,
+  useRouter,
+  useSegments,
+} from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
+import { useAuth } from "../_hooks/context/AuthContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
+  const { isAuthenticated } = useAuth(); // Get the isAuthenticated status
+  const router = useRouter(); // Get router for navigation
+
+  useEffect(() => {
+    // If the user is not authenticated, redirect to the no-auth/login page
+    if (isAuthenticated === false) {
+      router.replace("/(no-auth)/login");
+    }
+  }, [isAuthenticated]);
+
+  if (isAuthenticated === null) {
+    // Return null or a loading screen while checking authentication
+    return null;
+  }
+
+  if (isAuthenticated === false) {
+    // Prevent rendering the tabs if the user is not authenticated
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{

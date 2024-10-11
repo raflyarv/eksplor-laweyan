@@ -13,9 +13,16 @@ import { toFormikValidationSchema } from "zod-formik-adapter";
 import { useFormik } from "formik";
 import { typography } from "@/theme/typography";
 import { colors } from "@/theme/colors";
-import { NoAuthInput, ValidationModal } from "../_components";
+import {
+  FullScreenLoading,
+  NoAuthInput,
+  ValidationModal,
+} from "../_components";
 import { router } from "expo-router";
 import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../_hooks/context/AuthContext";
 
 // Define a Zod schema
 const formSchema = z.object({
@@ -32,17 +39,32 @@ const initialValues: loginFormSchema = {
 };
 
 export default function Login() {
+  const { isAuthenticated, setIsAuthenticated, userData } = useAuth(); // Get the isAuthenticated status
+
+  const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [operationSuccess, setOperationSuccess] = useState<boolean>(false); // Change this to simulate success or failure
 
-  const onSubmit = (values: loginFormSchema) => {
-    if (values.username === "raflyarv") {
-      setOperationSuccess(true);
-      router.push("/(tabs)");
-    } else {
+  const onSubmit = async (values: loginFormSchema) => {
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(
+        "http://192.168.100.18:5000/auth/user/login",
+        values
+      );
+
+      await AsyncStorage.setItem("refreshToken", response.data.refreshToken);
+      setIsAuthenticated(true);
+      if (isAuthenticated) {
+        router.replace("/(tabs)");
+      }
+    } catch (err: any) {
+      setModalVisible(true);
       setOperationSuccess(false);
+    } finally {
+      setIsLoading(false);
     }
-    setModalVisible(true);
   };
 
   const toggleModal = () => {
@@ -62,133 +84,139 @@ export default function Login() {
     });
 
   return (
-    <View style={styles.container}>
-      <Text
-        style={[
-          typography.largeTitleBold,
-          {
-            marginBottom: spacing.medium,
-            alignSelf: "flex-start",
-          },
-        ]}
-      >
-        Masuk{" "}
-      </Text>
-
-      <NoAuthInput
-        type="text"
-        placeholder="Masukkan Username Anda"
-        onChangeText={handleChange("username")}
-        onBlur={handleBlur("username")}
-        value={values.username}
-        error={errors.username}
-        touched={touched.username}
-        placeholderTextColor={colors.brand.light}
-      />
-
-      <NoAuthInput
-        type="password"
-        placeholder="Masukkan Kata Sandi Anda"
-        onChangeText={handleChange("password")}
-        onBlur={handleBlur("password")}
-        value={values.password}
-        error={errors.password}
-        touched={touched.password}
-        placeholderTextColor={colors.brand.light}
-      />
-
-      <View
-        style={{
-          width: "100%",
-          marginBottom: 8,
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "flex-end",
-        }}
-      >
-        <Pressable
-          style={{
-            margin: 0,
-            padding: 0,
-          }}
+    <>
+      <View style={styles.container}>
+        <Text
+          style={[
+            typography.largeTitleBold,
+            {
+              marginBottom: spacing.medium,
+              alignSelf: "flex-start",
+            },
+          ]}
         >
-          <Text
-            style={[
-              typography.footnote,
-              {
-                color: colors.brand.main,
-                fontWeight: 500,
-              },
-            ]}
-          >
-            Lupa Kata Sandi?
-          </Text>
-        </Pressable>
-      </View>
-
-      <View
-        style={{
-          width: "100%",
-          marginBottom: 15,
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "flex-end",
-        }}
-      >
-        <Text style={[typography.footnote, { fontWeight: 500 }]}>
-          {" "}
-          Belum memiliki akun?{" "}
+          Masuk{" "}
         </Text>
-        <Pressable
+
+        <NoAuthInput
+          type="text"
+          placeholder="Masukkan Username Anda"
+          onChangeText={handleChange("username")}
+          onBlur={handleBlur("username")}
+          value={values.username}
+          error={errors.username}
+          touched={touched.username}
+          placeholderTextColor={colors.brand.light}
+        />
+
+        <NoAuthInput
+          type="password"
+          placeholder="Masukkan Kata Sandi Anda"
+          onChangeText={handleChange("password")}
+          onBlur={handleBlur("password")}
+          value={values.password}
+          error={errors.password}
+          touched={touched.password}
+          placeholderTextColor={colors.brand.light}
+        />
+
+        <View
           style={{
-            margin: 0,
-            padding: 0,
+            width: "100%",
+            marginBottom: 8,
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "flex-end",
           }}
-          onPress={() => router.push("/register")}
         >
-          <Text
-            style={[
-              typography.footnote,
-              {
-                textDecorationLine: "underline",
-                color: colors.brand.main,
-                fontWeight: 500,
-              },
-            ]}
+          <Pressable
+            style={{
+              margin: 0,
+              padding: 0,
+            }}
+            onPress={() => router.push("/forgot-password")}
           >
-            Registrasi di sini
+            <Text
+              style={[
+                typography.footnote,
+                {
+                  color: colors.brand.main,
+                  fontWeight: 500,
+                },
+              ]}
+            >
+              Lupa Kata Sandi?
+            </Text>
+          </Pressable>
+        </View>
+
+        <View
+          style={{
+            width: "100%",
+            marginBottom: 15,
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Text style={[typography.footnote, { fontWeight: 500 }]}>
+            {" "}
+            Belum memiliki akun?{" "}
           </Text>
-        </Pressable>
-      </View>
+          <Pressable
+            style={{
+              margin: 0,
+              padding: 0,
+            }}
+            onPress={() => router.push("/register")}
+          >
+            <Text
+              style={[
+                typography.footnote,
+                {
+                  textDecorationLine: "underline",
+                  color: colors.brand.main,
+                  fontWeight: 500,
+                },
+              ]}
+            >
+              Registrasi di sini
+            </Text>
+          </Pressable>
+        </View>
 
-      {/* Submit Button */}
-      <View
-        style={{
-          alignSelf: "flex-end",
-        }}
-      >
-        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Submit Button */}
+        <View
+          style={{
+            alignSelf: "flex-end",
+          }}
+        >
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleSubmit()}
+          >
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
 
-      <IndicatorModal
-        isVisible={operationSuccess ? false : isModalVisible}
-        onClose={toggleModal}
-        imageUrl={operationSuccess ? "" : "password-not-same"}
-        title={
-          operationSuccess
-            ? "Email Telah Terverifikasi!"
-            : "Username/password salah!"
-        }
-        description={
-          operationSuccess
-            ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
-            : "Silahkan coba lagi atau melakukan lupa kata sandi."
-        }
-        isSuccess={operationSuccess}
-      />
-    </View>
+        <IndicatorModal
+          isVisible={operationSuccess ? false : isModalVisible}
+          onClose={toggleModal}
+          imageUrl={operationSuccess ? "" : "password-not-same"}
+          title={
+            operationSuccess
+              ? "Email Telah Terverifikasi!"
+              : "Username/password salah!"
+          }
+          description={
+            operationSuccess
+              ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
+              : "Silahkan coba lagi atau melakukan lupa kata sandi."
+          }
+        />
+      </View>
+      {isLoading && <FullScreenLoading />}
+    </>
   );
 }
 

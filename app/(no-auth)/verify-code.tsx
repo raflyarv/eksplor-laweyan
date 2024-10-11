@@ -1,4 +1,4 @@
-// import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import {
   View,
   Text,
@@ -14,9 +14,14 @@ import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
+import axios from "axios";
+import { useState } from "react";
+import { FullScreenLoading, IndicatorModal } from "../_components";
 
 const formSchema = z.object({
-  verificationCode: z.string({ required_error: "Kode Verifikasi Harus Diisi" }),
+  resetPasswordCode: z.string({
+    required_error: "Kode Verifikasi Harus Diisi",
+  }),
   //   email: z
   //     .string({ required_error: "Alamat email Harus Diisi" })
   //     .email({ message: "Format email harus benar." }),
@@ -26,14 +31,49 @@ type verifyCodeSchema = z.infer<typeof formSchema>;
 
 const initialValues: verifyCodeSchema = {
   //   email: "",
-  verificationCode: "",
+  resetPasswordCode: "",
 };
 
 export default function VerifyCode() {
-  //   const { id } = useLocalSearchParams();
+  const { email } = useLocalSearchParams();
 
-  const onSubmit = (values: verifyCodeSchema) => {
-    console.log(values);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [operationSuccess, setOperationSuccess] = useState<boolean>(false); // Change this to simulate success or fail
+
+  const onSubmit = async (values: verifyCodeSchema) => {
+    setIsLoading(true);
+
+    try {
+      const requestBody = {
+        ...values,
+        email,
+      };
+
+      const response = await axios.post(
+        "http://192.168.100.18:5000/api/user/verify-reset-password",
+        requestBody
+      );
+
+      router.push({
+        pathname: "/reset-password",
+        params: { email: email },
+      });
+    } catch (err: any) {
+      setModalVisible(true);
+      setOperationSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleModal = () => {
+    if (operationSuccess === true) {
+      setModalVisible(false);
+    } else {
+      setModalVisible(false);
+    }
   };
 
   const {
@@ -51,71 +91,72 @@ export default function VerifyCode() {
   });
 
   return (
-    <View
-      style={[
-        styles.mainContainer,
-        {
-          paddingHorizontal: 20,
-        },
-      ]}
-    >
+    <>
       <View
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          marginBottom: 20,
-          rowGap: 10,
-        }}
+        style={[
+          styles.mainContainer,
+          {
+            paddingHorizontal: 20,
+          },
+        ]}
       >
-        <Text style={[typography.title2Bold]}>Masukkan Kode </Text>
-        <Text style={[typography.footnote]}>
-          Silahkan masukkan 4 digit kode yang telah dikirimkan melalui email
-          <Text style={{ fontWeight: 500, color: colors.brand.main }}>
-            {" "}
-            tohirraflyy28@gmail.com{" "}
-          </Text>
-          untuk melakukan reset password.
-        </Text>
-      </View>
-
-      <VerificationInput
-        name="verificationCode"
-        setFieldValue={setFieldValue}
-      />
-
-      {/* Submit Button */}
-      <View
-        style={{
-          alignSelf: "flex-end",
-        }}
-      >
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Pressable
-        style={{
-          margin: 0,
-          padding: 0,
-        }}
-        onPress={() => router.push("/(no-auth)/reset-password")}
-      >
-        <Text
-          style={[
-            typography.footnote,
-            {
-              textDecorationLine: "underline",
-              color: colors.brand.main,
-              fontWeight: 500,
-            },
-          ]}
+        <View
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            marginBottom: 20,
+            rowGap: 10,
+          }}
         >
-          Reset Password
-        </Text>
-      </Pressable>
-    </View>
+          <Text style={[typography.title2Bold]}>Masukkan Kode </Text>
+          <Text style={[typography.footnote]}>
+            Silahkan masukkan 6 digit kode yang telah dikirimkan melalui email
+            <Text style={{ fontWeight: 500, color: colors.brand.main }}>
+              {" "}
+              {email}{" "}
+            </Text>
+            untuk melakukan reset password.
+          </Text>
+        </View>
+
+        <VerificationInput
+          name="resetPasswordCode"
+          setFieldValue={setFieldValue}
+        />
+
+        {/* Submit Button */}
+        <View
+          style={{
+            alignSelf: "flex-end",
+          }}
+        >
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleSubmit()}
+          >
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+
+        <IndicatorModal
+          isVisible={isModalVisible}
+          onClose={toggleModal}
+          imageUrl={operationSuccess ? "email-verified" : "password-not-same"}
+          title={
+            operationSuccess
+              ? "Email Telah Terverifikasi!"
+              : "Kode yang Dimasukkan Salah"
+          }
+          description={
+            operationSuccess
+              ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
+              : `Silahkan cek email Anda: ${email} untuk 6 digit kode.`
+          }
+        />
+      </View>
+      {isLoading && <FullScreenLoading />}
+    </>
   );
 }
 

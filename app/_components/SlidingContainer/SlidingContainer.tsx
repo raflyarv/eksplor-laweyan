@@ -8,6 +8,7 @@ import {
   Dimensions,
   ScrollView,
   Text,
+  SafeAreaView,
 } from "react-native";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -109,7 +110,7 @@ export default function SlidingContainer() {
 const styles = StyleSheet.create({
   // Main container that fills the screen
   mainContainer: {
-    ...StyleSheet.absoluteFillObject, // Full screen
+    flex: 1, // Full screen
     justifyContent: "center",
     alignItems: "center",
   },

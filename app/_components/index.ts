@@ -10,6 +10,8 @@ import ReviewFormModal from "./ReviewFormModal";
 import ReviewCards from "./ReviewCards";
 import MyReviewCards from "./MyReviewCards";
 import ConfirmationModal from "./ConfirmationModal";
+import FullScreenLoading from "./FullScreenLoading";
+import IndicatorModal from "./IndicatorModal/IndicatorModal";
 
 export {
   DynamicAvatar,
@@ -24,4 +26,6 @@ export {
   ReviewCards,
   MyReviewCards,
   ConfirmationModal,
+  FullScreenLoading,
+  IndicatorModal,
 };

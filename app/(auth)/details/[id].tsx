@@ -17,6 +17,7 @@ import { Icon } from "react-native-elements";
 
 import site from "@/assets/dummy/sites.json";
 import { averageRating } from "@/utils/utils";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Perlu dibuat Models untuk cetakan
 interface OpeningHours {
@@ -96,7 +97,7 @@ export default function SiteDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const data: any = site.find((item) => item.id === id);
 
-  // const [starRating, setStarRating] = useState(0);
+  const [starRating, setStarRating] = useState(0);
 
   return (
     <ScrollView
@@ -167,13 +168,13 @@ export default function SiteDetails() {
               alignItems: "center",
             }}
           >
-            <MaterialIcons name="star" size={16} color={colors.warning} />
+            {/* <MaterialIcons name="star" size={16} color={colors.warning} />
             <Text style={[typography.subhead, { color: colors.text.main }]}>
-              {averageRating(data?.reviews)}
+              {averageRating(data?.reviews.rating)}
             </Text>
             <Text style={[typography.subhead, { color: colors.text.main }]}>
               ({data.reviews.length})
-            </Text>
+            </Text> */}
           </View>
 
           <View

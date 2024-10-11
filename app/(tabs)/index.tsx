@@ -20,6 +20,7 @@ import { Link, router, useNavigation } from "expo-router";
 import sites from "@/assets/dummy/sites.json";
 import ImageCard from "../_components/ImageCard";
 import { averageRating, calculateDistance } from "@/utils/utils";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const [selectedTab, setSelectedTab] = useState("Terdekat");
@@ -124,7 +125,7 @@ export default function HomeScreen() {
   ];
 
   return (
-    <>
+    <SafeAreaView>
       <ScrollView
         style={{
           backgroundColor: "white",
@@ -435,6 +436,6 @@ export default function HomeScreen() {
       >
         <MaterialIcons name="qr-code-scanner" size={30} color={"white"} />
       </TouchableOpacity>
-    </>
+    </SafeAreaView>
   );
 }

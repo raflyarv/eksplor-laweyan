@@ -11,8 +11,11 @@ import { colors } from "@/theme/colors";
 import { useFormik } from "formik";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { z } from "zod";
-import { NoAuthInput } from "../_components";
+import { FullScreenLoading, NoAuthInput } from "../_components";
 import { router } from "expo-router";
+import { useState } from "react";
+import axios from "axios";
+import { IndicatorModal } from "../_components";
 
 const formSchema = z.object({
   email: z
@@ -27,10 +30,38 @@ const initialValues: forgotPassSchema = {
 };
 
 export default function ForgotPassword() {
-  //   const { id } = useLocalSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = (values: forgotPassSchema) => {
-    console.log(values);
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [operationSuccess, setOperationSuccess] = useState<boolean>(false); // Change this to simulate success or failure
+
+  const onSubmit = async (values: forgotPassSchema) => {
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(
+        "http://192.168.100.18:5000/api/user/forgot-password",
+        values
+      );
+
+      router.push({
+        pathname: "/verify-code",
+        params: { email: values.email },
+      });
+    } catch (err: any) {
+      setModalVisible(true);
+      setOperationSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleModal = () => {
+    if (operationSuccess === true) {
+      setModalVisible(false);
+    } else {
+      setModalVisible(false);
+    }
   };
 
   const {
@@ -48,78 +79,76 @@ export default function ForgotPassword() {
   });
 
   return (
-    <View
-      style={[
-        styles.mainContainer,
-        {
-          paddingHorizontal: 20,
-        },
-      ]}
-    >
+    <>
       <View
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          marginBottom: 20,
-          rowGap: 10,
-        }}
+        style={[
+          styles.mainContainer,
+          {
+            paddingHorizontal: 20,
+          },
+        ]}
       >
-        <Text style={[typography.title2Bold]}>Lupa Password </Text>
-        <Text style={[typography.footnote]}>
-          Masukkan alamat email yang sudah terdaftar untuk melakukan reset
-          password.
-          {/* <Text style={{ fontWeight: 500, color: colors.brand.main }}>
-            {" "}
-            tohirraflyy28@gmail.com{" "}
-          </Text> */}
-        </Text>
-      </View>
-
-      <NoAuthInput
-        type="text"
-        placeholder="Masukkan Alamat Email Anda"
-        onChangeText={handleChange("email")}
-        onBlur={handleBlur("email")}
-        value={values.email}
-        error={errors.email}
-        touched={touched.email}
-        placeholderTextColor={colors.brand.light}
-        inputMode="email"
-      />
-
-      {/* Submit Button */}
-      <View
-        style={{
-          alignSelf: "flex-end",
-        }}
-      >
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Kirim Kode</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Pressable
-        style={{
-          margin: 0,
-          padding: 0,
-        }}
-        onPress={() => router.push("/(no-auth)/verify-code")}
-      >
-        <Text
-          style={[
-            typography.footnote,
-            {
-              textDecorationLine: "underline",
-              color: colors.brand.main,
-              fontWeight: 500,
-            },
-          ]}
+        <View
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            marginBottom: 20,
+            rowGap: 10,
+          }}
         >
-          Verifikasi Kode
-        </Text>
-      </Pressable>
-    </View>
+          <Text style={[typography.title2Bold]}>Lupa Password </Text>
+          <Text style={[typography.footnote]}>
+            Masukkan alamat email yang sudah terdaftar untuk melakukan reset
+            password.
+          </Text>
+        </View>
+
+        <NoAuthInput
+          type="text"
+          placeholder="Masukkan Alamat Email Anda"
+          onChangeText={handleChange("email")}
+          onBlur={handleBlur("email")}
+          value={values.email}
+          error={errors.email}
+          touched={touched.email}
+          placeholderTextColor={colors.brand.light}
+          inputMode="email"
+        />
+
+        {/* Submit Button */}
+        <View
+          style={{
+            alignSelf: "flex-end",
+          }}
+        >
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleSubmit()}
+          >
+            <Text style={styles.buttonText}>Kirim Kode</Text>
+          </TouchableOpacity>
+        </View>
+
+        <IndicatorModal
+          isVisible={isModalVisible}
+          onClose={toggleModal}
+          imageUrl={operationSuccess ? "email-verified" : "password-not-same"}
+          title={
+            operationSuccess
+              ? "Email Telah Terverifikasi!"
+              : "Email tidak terdaftar"
+          }
+          description={
+            operationSuccess
+              ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
+              : `Email ${values.email} yang Anda Masukkan Belum Terdaftar.`
+          }
+        />
+      </View>
+
+      {isLoading && <FullScreenLoading />}
+    </>
   );
 }
 

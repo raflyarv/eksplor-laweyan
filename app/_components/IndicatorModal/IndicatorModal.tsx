@@ -25,7 +25,6 @@ interface IndicatorModalProps {
   imageUrl: string; // URL of the image to display
   title: string; // title of the operation result
   description: string; // description of the operation result
-  isSuccess: boolean; // indicates if the operation was successful
 }
 
 export default function IndicatorModal({
@@ -34,7 +33,6 @@ export default function IndicatorModal({
   imageUrl,
   title,
   description,
-  isSuccess,
 }: IndicatorModalProps) {
   const imageSource =
     imageMap[imageUrl] || require("@/assets/static/not-found.png"); // Fallback image
