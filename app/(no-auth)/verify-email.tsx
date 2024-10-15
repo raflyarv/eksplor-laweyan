@@ -41,15 +41,14 @@ export default function VerifyEmail() {
 
   const onSubmit = async (values: verifyEmailSchema) => {
     setIsLoading(true);
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
     try {
       const requestBody = {
         verificationCode: values.verificationCode, // spread the values object
         email, // add the email to the body
       };
-      const response = await axios.post(
-        "http://192.168.100.18:5000/api/user/verify-email",
-        requestBody
-      );
+      await axios.post(`${baseUrl}/api/user/verify-email`, requestBody);
 
       setModalVisible(true);
       setOperationSuccess(true);

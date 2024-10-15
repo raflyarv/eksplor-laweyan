@@ -10,6 +10,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
 import { useAuth } from "../_hooks/context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { UserLocationProvider } from "../_hooks/context/UserLocationContext";
 
 export default function TabLayout() {
   const { isAuthenticated } = useAuth(); // Get the isAuthenticated status
@@ -33,48 +34,50 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        title: "",
-        tabBarActiveTintColor: colors.brand.main,
-        headerShown: false,
-        tabBarStyle: { height: 72, paddingBottom: 0 },
-        tabBarItemStyle: { width: 50 },
-        tabBarHideOnKeyboard: true,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons size={34} name="home" color={color} />
-          ),
+    <UserLocationProvider>
+      <Tabs
+        screenOptions={{
+          title: "",
+          tabBarActiveTintColor: colors.brand.main,
+          headerShown: false,
+          tabBarStyle: { height: 72, paddingBottom: 0 },
+          tabBarItemStyle: { width: 50 },
+          tabBarHideOnKeyboard: true,
         }}
-      />
-      <Tabs.Screen
-        name="Explore"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons size={34} name="explore" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Bookmark"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons size={34} name="bookmark" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Profile"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons size={34} name="account-circle" color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons size={34} name="home" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="Explore"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons size={34} name="explore" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="Bookmark"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons size={34} name="bookmark" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="Profile"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons size={34} name="account-circle" color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </UserLocationProvider>
   );
 }

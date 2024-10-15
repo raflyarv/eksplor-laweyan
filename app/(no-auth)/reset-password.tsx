@@ -54,6 +54,7 @@ export default function ResetPassword() {
 
   const onSubmit = async (values: resetPasswordSchema) => {
     setIsLoading(true);
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
 
     try {
       const requestBody = {
@@ -61,10 +62,7 @@ export default function ResetPassword() {
         newPassword: values.confirmPassword,
       };
 
-      const response = await axios.post(
-        "http://192.168.100.18:5000/api/user/reset-password",
-        requestBody
-      );
+      await axios.post(`${baseUrl}/api/user/reset-password`, requestBody);
       setModalVisible(true);
       setOperationSuccess(true);
     } catch (err: any) {

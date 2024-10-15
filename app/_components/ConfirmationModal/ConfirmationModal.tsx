@@ -23,6 +23,7 @@ interface ConfirmationModalProps {
   onCloseAfter: () => void;
   imageUrl: string; // URL of the image to display
   title: string; // title of the operation result
+  buttonText: string;
 }
 
 export default function ConfirmationModal({
@@ -31,6 +32,7 @@ export default function ConfirmationModal({
   onCloseAfter,
   imageUrl,
   title,
+  buttonText,
 }: ConfirmationModalProps) {
   const imageSource =
     imageMap[imageUrl] || require("@/assets/static/not-found.png"); // Fallback image
@@ -78,7 +80,7 @@ export default function ConfirmationModal({
               onPress={onCloseAfter}
               style={[styles.closeButton, { backgroundColor: colors.danger }]}
             >
-              <Text style={[styles.buttonText]}>Keluar</Text>
+              <Text style={[styles.buttonText]}>{buttonText}</Text>
             </TouchableOpacity>
           </View>
         </View>

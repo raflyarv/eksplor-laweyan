@@ -44,6 +44,7 @@ export default function VerifyCode() {
 
   const onSubmit = async (values: verifyCodeSchema) => {
     setIsLoading(true);
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
 
     try {
       const requestBody = {
@@ -51,8 +52,8 @@ export default function VerifyCode() {
         email,
       };
 
-      const response = await axios.post(
-        "http://192.168.100.18:5000/api/user/verify-reset-password",
+      await axios.post(
+        `${baseUrl}/api/user/verify-reset-password`,
         requestBody
       );
 

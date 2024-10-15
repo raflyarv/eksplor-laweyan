@@ -37,10 +37,10 @@ export default function ForgotPassword() {
 
   const onSubmit = async (values: forgotPassSchema) => {
     setIsLoading(true);
-
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
     try {
       const response = await axios.post(
-        "http://192.168.100.18:5000/api/user/forgot-password",
+        `${baseUrl}/api/user/forgot-password`,
         values
       );
 

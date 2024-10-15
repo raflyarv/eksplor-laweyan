@@ -72,6 +72,7 @@ export default function Register() {
     setIsLoading(true);
 
     const { profileImage, username, fullName, confirmPassword, email } = values;
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
 
     try {
       const formData = new FormData();
@@ -94,7 +95,7 @@ export default function Register() {
       formData.append("email", email);
 
       const response = await axios.post(
-        "http://192.168.100.18:5000/api/user/register",
+        `${baseUrl}/api/user/register`,
         formData,
         {
           headers: {

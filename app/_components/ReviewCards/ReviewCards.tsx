@@ -4,11 +4,13 @@ import { View, Text } from "react-native";
 import { Icon } from "react-native-elements";
 import DynamicAvatar from "../DynamicAvatar";
 import RatingStar from "../RatingStar";
+import { timeAgo } from "@/app/utils/timeAgo";
+import { formatDateToIndonesian } from "@/app/utils/formattedDate";
 
 interface ReviewCardsProps {
   name: string;
   reviewCount: number;
-  userProfileImg: string;
+  userProfileImg: string | null;
   rating: number;
   timestamp: string;
   dateVisited: string;
@@ -24,6 +26,8 @@ export default function ReviewCards({
   dateVisited,
   content,
 }: ReviewCardsProps) {
+  const timeIndicator = timeAgo(timestamp);
+  const formattedDate = formatDateToIndonesian(dateVisited);
   return (
     <View
       style={{
@@ -47,7 +51,11 @@ export default function ReviewCards({
           marginBottom: 5,
         }}
       >
-        <DynamicAvatar imageUrl={userProfileImg} name={name} size={50} />
+        <DynamicAvatar
+          imageUrl={userProfileImg || "https://invalid-link.com/avatar.jpg"}
+          name={name}
+          size={50}
+        />
         <View
           style={{
             display: "flex",
@@ -71,7 +79,7 @@ export default function ReviewCards({
       >
         <RatingStar rating={rating} isEditable={false} />
         <Icon name="circle" type="material" size={8} color={colors.disable} />
-        <Text style={[typography.footnote]}> {timestamp} </Text>
+        <Text style={[typography.footnote]}> {timeIndicator} </Text>
       </View>
 
       <View
@@ -81,7 +89,9 @@ export default function ReviewCards({
           marginBottom: 8,
         }}
       >
-        <Text style={[typography.footnote]}>Dikujungi pada {dateVisited}</Text>
+        <Text style={[typography.footnote]}>
+          Dikunjungi pada {formattedDate}
+        </Text>
       </View>
 
       <View

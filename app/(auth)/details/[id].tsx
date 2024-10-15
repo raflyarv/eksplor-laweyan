@@ -3,7 +3,7 @@ import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,27 @@ import {
   Pressable,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from "react-native";
-import { DynamicAvatar, RatingStar, ReviewFormModal } from "@/app/_components";
+import {
+  ContactItems,
+  DynamicAvatar,
+  RatingStar,
+  ReviewCards,
+  ReviewFormModal,
+  UniqueFactCard,
+} from "@/app/_components";
 import { Icon } from "react-native-elements";
 
 import site from "@/assets/dummy/sites.json";
-import { averageRating } from "@/utils/utils";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SiteDetailsProps } from "@/app/_models/site.model";
+import axios from "axios";
+import { getOpenCloseStatus } from "@/app/utils/openingHours";
+import { calculateWalkingTime } from "@/app/utils/calculateWalkingTime";
+import { useUserLocation } from "@/app/_hooks/context/UserLocationContext";
+import { calculateDistance } from "@/app/utils/calculateDistance";
+import { averageRating } from "@/app/utils/averageRating";
 
 // Perlu dibuat Models untuk cetakan
 interface OpeningHours {
@@ -26,640 +40,546 @@ interface OpeningHours {
   closeHour: string;
 }
 
-const dataJamOperasional =
-  "Senin 10.00 - 17.00,Selasa 10.00 - 17.00,Rabu 10.00 - 17.00,Kamis 10.00 - 17.00,Jumat 10.00 - 17.00";
+// Define the structure for the User who submitted the review
+interface User {
+  _id: string;
+  fullName: string;
+  profileImage: string | null; // profileImage can be null if not provided
+  reviewCount: number;
+}
 
-const modifiedResult: OpeningHours[] = dataJamOperasional
-  .split(",")
-  .map((entry) => {
-    const [day, open, , close] = entry.split(" ");
-
-    return {
-      day,
-      openHour: open,
-      closeHour: close,
-    };
-  });
-
-const daysMap: { [key: number]: string } = {
-  0: "Minggu",
-  1: "Senin",
-  2: "Selasa",
-  3: "Rabu",
-  4: "Kamis",
-  5: "Jumat",
-  6: "Sabtu",
-};
-
-function getOpenCloseStatus(): {
-  indicator: string;
-  opening: string | null;
-  closing: string | null;
-} {
-  const now = new Date();
-
-  const currentDay = daysMap[now.getDay()];
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-
-  const todayHours = modifiedResult.find((hours) => hours.day === currentDay);
-
-  if (!todayHours) {
-    return {
-      indicator: "Tutup",
-      opening: null,
-      closing: null,
-    };
-  }
-
-  const [openHour, openMinute] = todayHours.openHour.split(".").map(Number);
-  const [closeHour, closeMinute] = todayHours.closeHour.split(".").map(Number);
-
-  const isOpenNow =
-    (currentHour > openHour ||
-      (currentHour === openHour && currentMinute >= openMinute)) &&
-    (currentHour < closeHour ||
-      (currentHour === closeHour && currentMinute <= closeMinute));
-
-  return {
-    indicator: isOpenNow ? "Buka" : "Tutup",
-    opening: todayHours.openHour,
-    closing: todayHours.closeHour,
-  };
+// Define the structure for a Review
+interface Review {
+  userId: User; // Reference to the user who submitted the review
+  locationId: number; // The location the review is related to
+  rating: number; // The rating provided (e.g., 1 to 5)
+  comments: string; // The content of the review
+  dateVisited: string; // The date when the location was visited
+  createdAt: string; // The date when the review was created
+  updatedAt: string; // The date when the review was last updated
 }
 
 export default function SiteDetails() {
-  const status = getOpenCloseStatus();
   const [isOpenDropdown, setIsOpenDropwdown] = useState(false);
+  const [siteData, setSiteData] = useState<SiteDetailsProps>();
+  const [siteReview, setSiteReview] = useState<Review[]>([]);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(false); // New state to track refresh
 
   const { id } = useLocalSearchParams<{ id: string }>();
-  const data: any = site.find((item) => item.id === id);
 
-  const [starRating, setStarRating] = useState(0);
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
 
+  useEffect(() => {
+    const fetchSiteDetails = async () => {
+      try {
+        // Fetch admin data from your backend API
+        const response = await axios.get(`${baseUrl}/api/site/${id}`, {
+          withCredentials: true,
+        });
+        setSiteData(response.data);
+      } catch (error: any) {
+        setSiteData(undefined);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    const fetchSiteReviews = async () => {
+      try {
+        const response = await axios.get(
+          `${baseUrl}/api/review/location/${id}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        setSiteReview(response.data.reviews);
+      } catch (error: any) {
+        setSiteReview([]);
+      } finally {
+      }
+    };
+
+    fetchSiteDetails();
+    fetchSiteReviews();
+  }, [id, refreshTrigger]);
+
+  const result = getOpenCloseStatus(siteData?.operationalHours || "");
+  const { currentLocation } = useUserLocation();
+
+  const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
+
+  const distance = calculateDistance(
+    currentLocation?.latitude || 0,
+    currentLocation?.longitude || 0,
+    siteData?.latitude || 0,
+    siteData?.longitude || 0
+  );
+
+  const distanceInMeters = (() => {
+    const distanceValue = distance.endsWith("km")
+      ? parseFloat(distance) * 1000 // Convert km to meters
+      : parseInt(distance); // Already in meters
+
+    return distanceValue;
+  })();
+
+  const walkingTime = calculateWalkingTime(distanceInMeters);
+
+  const handleReviewSubmit = () => {
+    setRefreshTrigger((prev) => !prev); // Toggle refresh trigger to cause useEffect to re-run
+  };
   return (
-    <ScrollView
-      style={{
-        paddingHorizontal: spacing.medium,
-      }}
-    >
-      <View
+    <SafeAreaView>
+      <ScrollView
         style={{
-          width: "100%",
-          marginVertical: spacing.medium,
+          paddingHorizontal: spacing.medium,
         }}
       >
-        <TouchableOpacity onPress={() => router.back()}>
-          <MaterialIcons
-            name="arrow-back"
-            color={colors.brand.main}
-            size={32}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View
-        style={{
-          width: 200,
-          height: 250,
-          backgroundColor: "grey",
-          marginBottom: spacing.medium,
-        }}
-      ></View>
-
-      <View>
-        {/* Title & Bookmark */}
         <View
           style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: spacing.small,
+            width: "100%",
+            marginVertical: spacing.medium,
           }}
         >
-          <Text
-            style={[typography.title3Bold, { width: 300 }]}
-            ellipsizeMode="tail"
-            numberOfLines={2}
-          >
-            {id}
-          </Text>
-
-          <MaterialIcons
-            name="bookmark-outline"
-            size={24}
-            color={colors.brand.main}
-          />
-        </View>
-
-        {/* Rating and Distance */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: spacing.small,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {/* <MaterialIcons name="star" size={16} color={colors.warning} />
-            <Text style={[typography.subhead, { color: colors.text.main }]}>
-              {averageRating(data?.reviews.rating)}
-            </Text>
-            <Text style={[typography.subhead, { color: colors.text.main }]}>
-              ({data.reviews.length})
-            </Text> */}
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              columnGap: spacing.small,
-              alignItems: "center",
-            }}
-          >
-            <MaterialIcons name="near-me" size={16} color={colors.success} />
-            <Text style={[typography.subhead, { color: colors.text.main }]}>
-              100 m{" "}
-            </Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              columnGap: spacing.small,
-              alignItems: "center",
-            }}
-          >
+          <TouchableOpacity onPress={() => router.push("/(tabs)")}>
             <MaterialIcons
-              name="directions-walk"
-              size={16}
-              color={colors.success}
-            />
-            <Text style={[typography.subhead, { color: colors.text.main }]}>
-              10 menit{" "}
-            </Text>
-          </View>
-        </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            columnGap: spacing.small,
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            marginBottom: spacing.medium,
-          }}
-        >
-          <MaterialIcons name="location-on" size={16} color={colors.danger} />
-          <Text style={typography.subhead}>{data?.address}</Text>
-        </View>
-
-        <View
-          style={{
-            marginBottom: spacing.medium,
-          }}
-        >
-          <Text style={typography.headline}>Fakta Unik</Text>
-          <View>
-            <MaterialIcons
-              name="check-circle"
+              name="arrow-back"
+              color={colors.brand.main}
               size={32}
-              color={colors.success}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          horizontal
+          style={{
+            marginBottom: spacing.medium,
+          }}
+        >
+          {siteData?.images.map((image, index) => (
+            <Image
+              key={`image-${index}`}
+              width={300}
+              height={350}
+              source={{
+                uri: `${process.env.EXPO_PUBLIC_BASE_URL}/${image.url}`,
+              }}
               style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                zIndex: 1,
+                borderRadius: 5,
+                marginRight: spacing.medium,
               }}
             />
+          ))}
+        </ScrollView>
+
+        <View>
+          {/* Title & Bookmark */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: spacing.small,
+            }}
+          >
+            <Text
+              style={[typography.title3Bold, { width: 300 }]}
+              ellipsizeMode="tail"
+              numberOfLines={2}
+            >
+              {siteData?.siteName}
+            </Text>
+
+            <MaterialIcons
+              name="bookmark-outline"
+              size={32}
+              color={colors.brand.main}
+            />
+          </View>
+
+          {/* Rating and Distance */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: spacing.medium,
+            }}
+          >
             <View
               style={{
-                width: 280,
-                maxHeight: 120,
-                borderRadius: 5,
-                marginStart: 15,
-                marginTop: 10,
-                paddingHorizontal: spacing.medium,
-                paddingVertical: spacing.medium,
-                position: "relative",
-                zIndex: 0,
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1,
-                },
-                shadowOpacity: 0.1,
-                shadowRadius: 1.41,
-
-                elevation: 2,
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                columnGap: 5,
               }}
             >
-              <Text
-                style={{
-                  textAlign: "auto",
-                }}
-                ellipsizeMode="tail"
-                numberOfLines={4}
-              >
-                Lorem ipsum dolor sit amet consectetur. Risus quis non mattis
-                proin amet turpis pharetra ullamcorper.
+              <MaterialIcons name="star" size={24} color={colors.warning} />
+              <Text style={[typography.subhead, { color: colors.text.main }]}>
+                {siteReview.length > 0
+                  ? averageRating(siteReview)
+                  : "Belum ada ulasan"}
+              </Text>
+              <Text style={[typography.subhead, { color: colors.text.main }]}>
+                {siteReview.length > 0 ? `(${siteReview.length})` : `(0)`}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                columnGap: spacing.small,
+                alignItems: "center",
+              }}
+            >
+              <MaterialIcons name="near-me" size={24} color={colors.success} />
+              <Text style={[typography.subhead, { color: colors.text.main }]}>
+                {distance}{" "}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                columnGap: spacing.small,
+                alignItems: "center",
+              }}
+            >
+              <MaterialIcons
+                name="directions-walk"
+                size={24}
+                color={colors.success}
+              />
+              <Text style={[typography.subhead, { color: colors.text.main }]}>
+                {walkingTime}{" "}
               </Text>
             </View>
           </View>
-        </View>
 
-        <View>
           <View
             style={{
               width: "100%",
               flexDirection: "row",
-              alignItems: "center",
-              marginBottom: spacing.small,
+              columnGap: spacing.small,
+              justifyContent: "flex-start",
+              alignItems: "flex-start",
+              marginBottom: spacing.medium,
             }}
           >
-            <Text style={[typography.headline]}>Seputar </Text>
-
+            <MaterialIcons name="location-on" size={24} color={colors.danger} />
             <Text
               style={[
+                typography.subhead,
                 {
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  backgroundColor: colors.brand.main,
-                  color: "white",
+                  flex: 1, // Allow the text to take the remaining space
+                  flexWrap: "wrap", // Ensure text wraps onto the next line
                 },
-                typography.headline,
               ]}
             >
-              Rumah Batik Laweyan
+              {siteData?.address}{" "}
             </Text>
           </View>
 
-          <Text style={[typography.subhead, { textAlign: "justify" }]}>
-            Lorem ipsum dolor sit amet consectetur. Leo platea et in amet cras
-            et non in. Sed varius cum dapibus ultrices at. Ut massa donec tempor
-            eleifend. Risus tincidunt turpis turpis et pellentesque sagittis.
-          </Text>
-        </View>
-
-        {/* Jam Operasional Dropdown */}
-        <View
-          style={{
-            flexDirection: "row",
-            height: "auto",
-            justifyContent: "space-between",
-            alignItems: isOpenDropdown ? "flex-start" : "center",
-            marginBottom: spacing.medium,
-          }}
-        >
           <View
             style={{
-              width: "auto",
+              marginBottom: spacing.medium,
             }}
           >
-            <Text style={[typography.headline]}> Jam Operasional </Text>
+            <Text style={typography.headline}>Fakta Unik</Text>
+            <ScrollView horizontal>
+              {siteData?.uniqueFacts.map((fact, index) => (
+                <UniqueFactCard key={`fact-${index}`} fact={fact.fact} />
+              ))}
+            </ScrollView>
           </View>
-          <Pressable
+
+          <View
             style={{
-              width: "55%",
+              marginBottom: spacing.medium,
             }}
-            onPress={() => setIsOpenDropwdown(!isOpenDropdown)}
           >
             <View
               style={{
-                flexDirection: "column",
+                width: "100%",
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: spacing.small,
               }}
             >
-              {isOpenDropdown ? (
-                modifiedResult.map((hari, index) => {
-                  return (
-                    <View
-                      key={index}
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "flex-end",
-                      }}
-                    >
-                      <Text
+              <Text style={[typography.headline]}>Seputar </Text>
+
+              <Text
+                style={[
+                  {
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    backgroundColor: colors.brand.main,
+                    color: "white",
+                  },
+                  typography.headline,
+                ]}
+              >
+                {siteData?.siteName}
+              </Text>
+            </View>
+
+            <Text style={[typography.subhead, { textAlign: "justify" }]}>
+              {siteData?.description}
+            </Text>
+          </View>
+
+          {/* Jam Operasional Dropdown */}
+          <View
+            style={{
+              flexDirection: "row",
+              width: "100%",
+              height: "auto",
+              justifyContent: "space-between",
+              alignItems: isOpenDropdown ? "flex-start" : "center",
+              marginBottom: spacing.medium,
+            }}
+          >
+            <View
+              style={{
+                width: "auto",
+              }}
+            >
+              <Text style={[typography.headline]}>Jam Operasional </Text>
+            </View>
+            <Pressable
+              style={{
+                width: "55%",
+              }}
+              onPress={() => setIsOpenDropwdown(!isOpenDropdown)}
+            >
+              <View
+                style={{
+                  flexDirection: "column",
+                }}
+              >
+                {isOpenDropdown ? (
+                  result.modifiedResult.map((hari, index) => {
+                    return (
+                      <View
+                        key={index}
                         style={{
-                          width: "30%",
+                          flexDirection: "row",
+                          justifyContent: "flex-end",
                         }}
                       >
-                        {hari.day}
-                      </Text>
-                      <Text
-                        style={{
-                          width: "55%",
-                        }}
-                      >
-                        : {hari.openHour} - {hari.closeHour}
-                      </Text>
-                    </View>
-                  );
-                })
-              ) : (
-                <View
-                  style={{
-                    width: "auto",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    alignContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      width: "30%",
-                      color:
-                        status.indicator === "Tutup"
-                          ? colors.danger
-                          : colors.success,
-                    }}
-                  >
-                    {status.indicator}
-                  </Text>
-
-                  <Text
-                    style={{
-                      width: "10%",
-                      color: colors.text.disable,
-                    }}
-                  >
-                    &#x2022;
-                  </Text>
-
+                        <Text
+                          style={{
+                            width: "30%",
+                          }}
+                        >
+                          {hari.day}
+                        </Text>
+                        <Text
+                          style={{
+                            width: "55%",
+                          }}
+                        >
+                          : {hari.openHour} - {hari.closeHour}
+                        </Text>
+                      </View>
+                    );
+                  })
+                ) : (
                   <View
                     style={{
                       width: "auto",
                       flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "center",
+                      alignContent: "center",
                     }}
                   >
                     <Text
                       style={{
-                        width: 100,
+                        width: "30%",
+                        color:
+                          result.indicator === "Tutup"
+                            ? colors.danger
+                            : colors.success,
+                      }}
+                    >
+                      {result.indicator}
+                    </Text>
+
+                    <Text
+                      style={{
+                        width: "10%",
                         color: colors.text.disable,
                       }}
                     >
-                      {status.indicator === "Buka"
-                        ? `Tutup ${status.closing}`
-                        : `Buka ${status.opening}`}
+                      &#x2022;
                     </Text>
 
-                    <MaterialIcons
-                      name="keyboard-arrow-down"
-                      size={18}
-                      color={colors.text.disable}
-                    />
+                    <View
+                      style={{
+                        width: "auto",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          width: 100,
+                          color: colors.text.disable,
+                        }}
+                      >
+                        {result.indicator === "Buka"
+                          ? `Tutup ${result.closing}`
+                          : `Buka ${result.opening}`}
+                      </Text>
+
+                      <MaterialIcons
+                        name="keyboard-arrow-down"
+                        size={18}
+                        color={colors.text.disable}
+                      />
+                    </View>
                   </View>
-                </View>
+                )}
+              </View>
+            </Pressable>
+          </View>
+
+          <View
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: spacing.medium,
+            }}
+          >
+            <Text style={[typography.headline]}>
+              Ulasan {siteReview.length > 0 && siteReview.length}{" "}
+            </Text>
+            <Pressable
+              onPress={() => {
+                router.push({
+                  pathname: "/details/reviews",
+                  params: { id: id },
+                });
+              }}
+            >
+              {siteReview.length > 4 && (
+                <Text style={[typography.subhead]}> Lihat Semua </Text>
               )}
+            </Pressable>
+          </View>
+
+          {siteReview.length > 0 ? (
+            <ScrollView
+              horizontal
+              style={{
+                marginBottom: spacing.medium,
+              }}
+            >
+              {siteReview.length > 0 &&
+                siteReview.map((review, index) => (
+                  <ReviewCards
+                    key={`review-${index}`}
+                    name={review.userId?.fullName}
+                    reviewCount={review.userId.reviewCount}
+                    userProfileImg={review.userId?.profileImage}
+                    rating={review.rating}
+                    timestamp={review.createdAt}
+                    dateVisited={review.dateVisited}
+                    content={review.comments}
+                  />
+                ))}
+            </ScrollView>
+          ) : (
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: spacing.medium,
+              }}
+            >
+              <Image
+                style={{
+                  width: 200,
+                  height: 200,
+                }}
+                source={require("@/assets/static/empty-review.png")}
+              />
+              <Text
+                style={[
+                  typography.subhead,
+                  { color: colors.text.disable, fontStyle: "italic" },
+                ]}
+              >
+                {" "}
+                Belum ada ulasan.{" "}
+              </Text>
             </View>
-          </Pressable>
+          )}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <MaterialIcons
+              name="edit-note"
+              size={24}
+              color={colors.brand.main}
+            />
+            <Text style={[styles.buttonText, typography.subhead]}>
+              Buat Ulasan{" "}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View
           style={{
             width: "100%",
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: spacing.medium,
+            flexDirection: "column",
+            rowGap: 5,
           }}
         >
-          <Text style={[typography.headline]}> Ulasan (5) </Text>
-          <Pressable
-            onPress={() => {
-              router.push({
-                pathname: "/details/reviews",
-                params: { id: id },
-              });
+          <Text style={[typography.headline]}>Hubungi Kami </Text>
+          <View
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
             }}
           >
-            <Text style={[typography.subhead]}> Lihat Semua </Text>
-          </Pressable>
+            {siteData?.contacts.map((item, index) => (
+              <ContactItems
+                key={`contact-${index}`}
+                type={
+                  item.type as "Instagram" | "Whatsapp" | "Facebook" | "Website"
+                }
+                name={item.contactName}
+                detail={item.detail}
+              />
+            ))}
+          </View>
         </View>
-        <ScrollView horizontal>
-          <View
-            style={{
-              width: 360,
-              height: "auto",
-              paddingHorizontal: 15,
-              paddingVertical: 15,
 
-              borderRadius: 10,
-              backgroundColor: "#FFF1EC",
-              marginRight: 10,
-            }}
-          >
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-                gap: 5,
-                alignItems: "center",
-                marginBottom: 5,
-              }}
-            >
-              <DynamicAvatar
-                imageUrl="https://invalid-link.com/avatar.jpg"
-                name="Muhammad Tohir Rafly"
-                size={50}
-              />
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <Text style={[typography.subhead]}> Muhammad Tohir Rafly </Text>
-                <Text style={[typography.footnote]}> 10 ulasan </Text>
-              </View>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 8,
-              }}
-            >
-              <RatingStar rating={4} isEditable={false} />
-              <Icon
-                name="circle"
-                type="material"
-                size={8}
-                color={colors.disable}
-              />
-              <Text style={[typography.footnote]}> 10 bulan yang lalu </Text>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                marginBottom: 8,
-              }}
-            >
-              <Text style={[typography.footnote]}>
-                Dikujungi pada 12 September 2022
-              </Text>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 5,
-              }}
-            >
-              <Text
-                style={[typography.subhead]}
-                ellipsizeMode="tail"
-                numberOfLines={5}
-              >
-                Lorem ipsuum bismillah doa untuk semua hari ini pada pagi ini
-                cemungut eakkkkkk Lorem ipsuum bismillah doa untuk semua hari
-                ini pada pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa
-                untuk semua hari ini pada pagi ini cemungut eakkkkkk Lorem
-                ipsuum bismillah doa untuk semua hari ini pada pagi ini cemungut
-                eakkkkkk Lorem ipsuum bismillah doa untuk semua hari ini pada
-                pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa untuk
-                semua hari ini pada pagi ini cemungut eakkkkkk
-              </Text>
-            </View>
-          </View>
-
-          <View
-            style={{
-              width: 360,
-              height: "auto",
-              paddingHorizontal: 15,
-              paddingVertical: 15,
-
-              borderRadius: 10,
-              backgroundColor: "#FFF1EC",
-            }}
-          >
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-                gap: 5,
-                alignItems: "center",
-                marginBottom: 5,
-              }}
-            >
-              <DynamicAvatar
-                imageUrl="https://invalid-link.com/avatar.jpg"
-                name="Muhammad Tohir Rafly"
-                size={50}
-              />
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <Text style={[typography.subhead]}> Muhammad Tohir Rafly </Text>
-                <Text style={[typography.footnote]}> 10 ulasan </Text>
-              </View>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 8,
-              }}
-            >
-              <RatingStar rating={4} isEditable={false} />
-              <Icon
-                name="circle"
-                type="material"
-                size={10}
-                color={colors.disable}
-              />
-              <Text style={[typography.footnote]}> 10 bulan yang lalu </Text>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                marginBottom: 8,
-              }}
-            >
-              <Text style={[typography.footnote]}>
-                Dikujungi pada 12 September 2022
-              </Text>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 5,
-              }}
-            >
-              <Text style={[typography.subhead, { fontWeight: "600" }]}>
-                Judul Review !{" "}
-              </Text>
-              <Text
-                style={[typography.subhead]}
-                ellipsizeMode="tail"
-                numberOfLines={4}
-              >
-                Lorem ipsuum bismillah doa untuk semua hari ini pada pagi ini
-                cemungut eakkkkkk Lorem ipsuum bismillah doa untuk semua hari
-                ini pada pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa
-                untuk semua hari ini pada pagi ini cemungut eakkkkkk Lorem
-                ipsuum bismillah doa untuk semua hari ini pada pagi ini cemungut
-                eakkkkkk Lorem ipsuum bismillah doa untuk semua hari ini pada
-                pagi ini cemungut eakkkkkk Lorem ipsuum bismillah doa untuk
-                semua hari ini pada pagi ini cemungut eakkkkkk
-              </Text>
-            </View>
-          </View>
-        </ScrollView>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => setIsModalVisible(true)}
-        >
-          <MaterialIcons name="edit-note" size={24} color={colors.brand.main} />
-          <Text style={[styles.buttonText, typography.subhead]}>
-            Buat Ulasan{" "}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <ReviewFormModal
-        reviewId="111223"
-        siteName="Nama Tempat Wisata"
-        isVisible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-      />
-    </ScrollView>
+        <ReviewFormModal
+          id={siteData?.id || 0}
+          siteName={siteData?.siteName || ""}
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          onReviewSubmit={handleReviewSubmit}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -674,6 +594,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingVertical: 5,
     columnGap: 5,
+    marginBottom: spacing.medium,
   },
   plusSign: {
     fontSize: 24,

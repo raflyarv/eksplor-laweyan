@@ -12,6 +12,7 @@ import MyReviewCards from "./MyReviewCards";
 import ConfirmationModal from "./ConfirmationModal";
 import FullScreenLoading from "./FullScreenLoading";
 import IndicatorModal from "./IndicatorModal/IndicatorModal";
+import ContactItems from "./ContactItems";
 
 export {
   DynamicAvatar,
@@ -28,4 +29,5 @@ export {
   ConfirmationModal,
   FullScreenLoading,
   IndicatorModal,
+  ContactItems,
 };

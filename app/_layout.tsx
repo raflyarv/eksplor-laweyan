@@ -6,11 +6,14 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 
 import { AuthProvider, useAuth } from "./_hooks/context/AuthContext";
+import { ModalProvider } from "./_hooks/context/ModalContext";
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Slot />
+      <ModalProvider>
+        <Slot />
+      </ModalProvider>
     </AuthProvider>
   );
 }

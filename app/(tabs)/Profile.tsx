@@ -7,7 +7,7 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -26,6 +26,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../_hooks/context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { ReviewProps } from "../_models/review.model";
 
 export default function Profile() {
   const { isAuthenticated, setIsAuthenticated, userData } = useAuth(); // Get the isAuthenticated status
@@ -33,20 +34,26 @@ export default function Profile() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(false); // New state to track refresh
+
+  const [userReviews, setUserReviews] = useState<ReviewProps[]>([]);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
+  const handleReviewSubmit = () => {
+    setRefreshTrigger((prev) => !prev); // Toggle refresh trigger to cause useEffect to re-run
+  };
+
   const handleLogout = async () => {
     setIsLoading(true);
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
     try {
       const refreshToken = await AsyncStorage.getItem("refreshToken");
-
-      console.log(refreshToken);
-
-      const response = await axios.post(
-        "http://192.168.100.18:5000/auth/user/logout",
+      await axios.post(
+        `${baseUrl}/auth/user/logout`,
         {},
         {
           headers: {
@@ -57,6 +64,7 @@ export default function Profile() {
 
       await AsyncStorage.removeItem("refreshToken");
       setIsAuthenticated(false);
+      setModalVisible(false);
       router.push("/(no-auth)/login");
     } catch (err: any) {
       setModalVisible(true);
@@ -66,15 +74,38 @@ export default function Profile() {
     }
   };
 
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
+  useEffect(() => {
+    const fetchUserReviews = async () => {
+      try {
+        const refreshToken = await AsyncStorage.getItem("refreshToken");
+
+        const response = await axios.get(`${baseUrl}/api/review/`, {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
+          },
+        });
+
+        setUserReviews(response.data.reviews);
+      } catch (error: any) {
+        setUserReviews([]);
+      } finally {
+      }
+    };
+    fetchUserReviews();
+  }, [refreshTrigger]);
+
   return (
     <>
-      <SafeAreaView>
-        <View
-          style={{
-            justifyContent: "center", // Centers vertically
-            backgroundColor: "white", // Optional: Background color for better visuals
-          }}
-        >
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: "center", // Centers vertically
+          backgroundColor: "white", // Optional: Background color for better visuals
+        }}
+      >
+        <View style={{}}>
           <View
             style={{
               paddingHorizontal: spacing.medium,
@@ -93,7 +124,7 @@ export default function Profile() {
                 <View style={styles.imageContainer}>
                   <Image
                     source={{
-                      uri: `${baseURL}${userData.profileImage}`,
+                      uri: `${baseURL}/${userData?.profileImage}`,
                     }}
                     style={styles.image}
                   />
@@ -124,7 +155,7 @@ export default function Profile() {
                   { color: colors.brand.main, marginBottom: 15 },
                 ]}
               >
-                {userData.fullName}
+                {userData?.fullName}
               </Text>
 
               <View
@@ -191,7 +222,7 @@ export default function Profile() {
             >
               <Text style={[typography.headline, { color: colors.text.main }]}>
                 {" "}
-                Ulasan yang Diberikan (10){" "}
+                Ulasan yang Diberikan ({userReviews.length}){" "}
               </Text>
 
               <Pressable
@@ -207,23 +238,25 @@ export default function Profile() {
             </View>
 
             <ScrollView horizontal>
-              <MyReviewCards
-                reviewId="11223344"
-                siteName="Rumah Batik Laweyan"
-                rating={3}
-                timestamp="2024-08-11T00:00:00.000Z"
-                visitedDate={new Date("2024-08-11")}
-                content="Oke guys ini bagus banget sich sangat recommended aaw awaw"
-              />
-
-              <MyReviewCards
-                reviewId="0011011"
-                siteName="Batik Pandono"
-                rating={4}
-                timestamp="2024-10-09T23:44:27.910+00:00"
-                visitedDate={new Date("2024-02-01")}
-                content="ini apa yah gatau hahaha lucu sich xixixi kita coba yang lebih panjang lagi ya kalimatnya agar supaya dapat kita tes sampai 200 karakter"
-              />
+              {userReviews.length > 0 ? (
+                userReviews.map((review, index) => (
+                  <MyReviewCards
+                    key={`review-${index}`}
+                    locationId={review.locationId}
+                    reviewId={review._id}
+                    siteName={review.siteName}
+                    rating={review.rating}
+                    timestamp={review.createdAt}
+                    dateVisited={review.dateVisited}
+                    content={review.comments}
+                    onReviewSubmit={handleReviewSubmit}
+                  />
+                ))
+              ) : (
+                <View>
+                  <Text> Belum ada ulasan. </Text>
+                </View>
+              )}
             </ScrollView>
           </View>
 
@@ -233,6 +266,7 @@ export default function Profile() {
             imageUrl="logout"
             title="Anda yakin Ingin Keluar ?"
             onCloseAfter={() => handleLogout()}
+            buttonText="Keluar"
           />
         </View>
       </SafeAreaView>

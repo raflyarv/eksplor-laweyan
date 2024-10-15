@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [userData, setUserData] = useState<any>(null); // State to store user data
 
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
   useEffect(() => {
     const checkToken = async () => {
       try {
@@ -48,14 +50,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Function to fetch user data
   const fetchUserData = async (refreshToken: string) => {
     try {
-      const response = await axios.get(
-        "http://192.168.100.18:5000/api/user/user",
-        {
-          headers: {
-            Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
-          },
-        }
-      );
+      const response = await axios.get(`${baseUrl}/api/user/user`, {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
+        },
+      });
       if (response.status === 200 && response.data) {
         setUserData(response.data); // Store user data in state
       }

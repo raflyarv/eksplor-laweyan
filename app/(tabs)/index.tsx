@@ -21,87 +21,91 @@ import sites from "@/assets/dummy/sites.json";
 import ImageCard from "../_components/ImageCard";
 import { averageRating, calculateDistance } from "@/utils/utils";
 import { SafeAreaView } from "react-native-safe-area-context";
+import useFetchSites from "../_hooks/api/sites/useFetchSites";
+import { useUserLocation } from "../_hooks/context/UserLocationContext";
 
 export default function HomeScreen() {
   const [selectedTab, setSelectedTab] = useState("Terdekat");
   const [errorMsg, setErrorMsg] = useState<any>(null);
 
-  const [currentLocation, setCurrentLocation] = useState<any>({});
+  const { currentLocation } = useUserLocation();
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
+  const { siteLists, loading, error } = useFetchSites();
 
-      let {
-        coords: { latitude, longitude },
-      } = await Location.getCurrentPositionAsync({});
-      setCurrentLocation({ latitude, longitude });
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       setErrorMsg("Permission to access location was denied");
+  //       return;
+  //     }
+
+  //     let {
+  //       coords: { latitude, longitude },
+  //     } = await Location.getCurrentPositionAsync({});
+  //     setCurrentLocation({ latitude, longitude });
+  //   })();
+  // }, []);
 
   // const [data, setData] = useState(null);
   // const [loading, setLoading] = useState(true);
   // const [error, setError] = useState(null);
 
-  const terdekatData = [
-    {
-      lokasiID: "1122",
-      nama: "Rumah Batik Laweyan",
-      ulasan: [
-        {
-          id: 1,
-          rating: 5,
-        },
-        {
-          id: 2,
-          rating: 3,
-        },
-      ],
-      jarak: 100,
-      imageUri:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_9TclsHMaZgj6jecm1ryOnuATCWNG2evM6Q&s",
-    },
+  // const terdekatData = [
+  //   {
+  //     lokasiID: "1122",
+  //     nama: "Rumah Batik Laweyan",
+  //     ulasan: [
+  //       {
+  //         id: 1,
+  //         rating: 5,
+  //       },
+  //       {
+  //         id: 2,
+  //         rating: 3,
+  //       },
+  //     ],
+  //     jarak: 100,
+  //     imageUri:
+  //       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_9TclsHMaZgj6jecm1ryOnuATCWNG2evM6Q&s",
+  //   },
 
-    {
-      lokasiID: "1123",
-      nama: "Esensi Coffee & Batik Lokakarya Setempat",
-      ulasan: [
-        {
-          id: 1,
-          rating: 3,
-        },
-        {
-          id: 2,
-          rating: 4,
-        },
-      ],
-      jarak: 10,
-      imageUri:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEaUAahCeFTygci14Kqa6WEXXLQBaQlODpdg&s",
-    },
+  //   {
+  //     lokasiID: "1123",
+  //     nama: "Esensi Coffee & Batik Lokakarya Setempat",
+  //     ulasan: [
+  //       {
+  //         id: 1,
+  //         rating: 3,
+  //       },
+  //       {
+  //         id: 2,
+  //         rating: 4,
+  //       },
+  //     ],
+  //     jarak: 10,
+  //     imageUri:
+  //       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEaUAahCeFTygci14Kqa6WEXXLQBaQlODpdg&s",
+  //   },
 
-    {
-      lokasiID: "1124",
-      nama: "Esensi Coffee & Batik",
-      ulasan: [
-        {
-          id: 1,
-          rating: 3,
-        },
-        {
-          id: 2,
-          rating: 4,
-        },
-      ],
-      jarak: 10,
-      imageUri:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEaUAahCeFTygci14Kqa6WEXXLQBaQlODpdg&s",
-    },
-  ];
+  //   {
+  //     lokasiID: "1124",
+  //     nama: "Esensi Coffee & Batik",
+  //     ulasan: [
+  //       {
+  //         id: 1,
+  //         rating: 3,
+  //       },
+  //       {
+  //         id: 2,
+  //         rating: 4,
+  //       },
+  //     ],
+  //     jarak: 10,
+  //     imageUri:
+  //       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEaUAahCeFTygci14Kqa6WEXXLQBaQlODpdg&s",
+  //   },
+  // ];
 
   const popularData = [
     "Site X (Popular)",
@@ -123,6 +127,8 @@ export default function HomeScreen() {
       uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_9TclsHMaZgj6jecm1ryOnuATCWNG2evM6Q&s",
     },
   ];
+
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
 
   return (
     <SafeAreaView>
@@ -233,11 +239,10 @@ export default function HomeScreen() {
           }}
         >
           {selectedTab === "Terdekat"
-            ? sites.map((item, index) => {
-                const rating = averageRating(item.reviews);
+            ? siteLists?.map((item, index) => {
                 const distance = calculateDistance(
-                  currentLocation.latitude,
-                  currentLocation.longitude,
+                  currentLocation?.latitude || 0,
+                  currentLocation?.longitude || 0,
                   item.latitude,
                   item.longitude
                 );
@@ -245,12 +250,12 @@ export default function HomeScreen() {
                 return (
                   <ImageCard
                     key={index}
-                    id={item.id}
-                    name={item.name}
-                    averageRating={rating}
-                    reviewTotal={item.reviews.length}
+                    id={`${item.id}`}
+                    name={item.siteName}
+                    averageRating={3.5}
+                    reviewTotal={10}
                     distance={distance}
-                    imageUrl={item.pictures[0].url}
+                    imageUrl={`${baseUrl}/${item.images[0].url}`}
                   />
                 );
               })

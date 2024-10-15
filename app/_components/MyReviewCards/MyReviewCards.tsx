@@ -7,35 +7,66 @@ import RatingStar from "../RatingStar";
 import { useState } from "react";
 import ReviewFormModal from "../ReviewFormModal";
 import { timeAgoIndicator } from "../../utils/dateUtils"; // Adjust the path as needed
+import { formatDateToIndonesian } from "@/app/utils/formattedDate";
+import { timeAgo } from "@/app/utils/timeAgo";
+import ConfirmationModal from "../ConfirmationModal";
+import axios from "axios";
+import FullScreenLoading from "../FullScreenLoading";
 
 interface MyReviewCards {
+  locationId: number;
   reviewId: string;
   siteName: string;
   rating: number;
   timestamp: string;
-  visitedDate: Date;
+  dateVisited: string;
   content: string;
+  onReviewSubmit: () => void;
 }
 
 export default function MyReviewCards({
+  locationId,
   reviewId,
   siteName,
   rating,
   timestamp,
-  visitedDate,
+  dateVisited,
   content,
+  onReviewSubmit,
 }: MyReviewCards) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const timeObj = new Date(timestamp);
+  const timeIndicator = timeAgo(timestamp);
+  const formattedDate = formatDateToIndonesian(dateVisited);
 
-  const timeAgoString = timeAgoIndicator(timeObj);
+  // Define the initial values for the review form
+  const initialValues = {
+    rating,
+    comments: content,
+    dateVisited: new Date(dateVisited), // Assuming dateVisited is in a format that can be converted to a Date object
+  };
 
-  const formattedVisitedDate = visitedDate.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const toggleConfirm = () => {
+    setIsConfirmVisible(!isConfirmVisible);
+  };
+
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
+  const handleDelete = async () => {
+    setIsLoading(true);
+    try {
+      await axios.delete(`${baseUrl}/api/review/${reviewId}`);
+
+      setIsConfirmVisible(false);
+      onReviewSubmit();
+    } catch (error: any) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View
@@ -50,6 +81,7 @@ export default function MyReviewCards({
         backgroundColor: "#FFF1EC",
       }}
     >
+      {isLoading && <FullScreenLoading />}
       <View
         style={{
           width: "100%",
@@ -101,7 +133,7 @@ export default function MyReviewCards({
           </TouchableOpacity>
 
           <TouchableOpacity
-            // onPress={pickImage}
+            onPress={toggleConfirm}
             style={{
               display: "flex",
               flexDirection: "row",
@@ -129,7 +161,7 @@ export default function MyReviewCards({
       >
         <RatingStar rating={rating} isEditable={false} />
         <Icon name="circle" type="material" size={10} color={colors.disable} />
-        <Text style={[typography.footnote]}> {timeAgoString} </Text>
+        <Text style={[typography.footnote]}> {timeIndicator} </Text>
       </View>
 
       <View
@@ -140,7 +172,7 @@ export default function MyReviewCards({
         }}
       >
         <Text style={[typography.footnote]}>
-          Dikujungi pada {formattedVisitedDate}
+          Dikujungi pada {formattedDate}
         </Text>
       </View>
 
@@ -162,13 +194,22 @@ export default function MyReviewCards({
       </View>
 
       <ReviewFormModal
-        reviewId={reviewId}
-        ratingScore={3}
-        content={content}
-        visitedDate={visitedDate}
+        id={locationId} // Pass the review id
         siteName={siteName}
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
+        onReviewSubmit={onReviewSubmit}
+        reviewId={reviewId} // Pass the reviewId for editing
+        initialValues={initialValues} // Pass the initial values for the form
+      />
+
+      <ConfirmationModal
+        title="Anda yakin ingin menghapus ulasan?"
+        isVisible={isConfirmVisible}
+        imageUrl="delete"
+        onClose={toggleConfirm}
+        onCloseAfter={() => handleDelete()}
+        buttonText="Hapus"
       />
     </View>
   );

@@ -47,19 +47,20 @@ export default function Login() {
 
   const onSubmit = async (values: loginFormSchema) => {
     setIsLoading(true);
-
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+    console.log(values);
     try {
-      const response = await axios.post(
-        "http://192.168.100.18:5000/auth/user/login",
-        values
-      );
+      const response = await axios.post(`${baseUrl}/auth/user/login`, values);
 
       await AsyncStorage.setItem("refreshToken", response.data.refreshToken);
       setIsAuthenticated(true);
+
+      console.log(isAuthenticated);
       if (isAuthenticated) {
         router.replace("/(tabs)");
       }
     } catch (err: any) {
+      console.log(err);
       setModalVisible(true);
       setOperationSuccess(false);
     } finally {

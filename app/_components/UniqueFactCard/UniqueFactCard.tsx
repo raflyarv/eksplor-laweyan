@@ -26,22 +26,15 @@ export default function UniqueFactCard({ fact }: UniqueFactCardProps) {
           style={{
             width: 280,
             maxHeight: 120,
-            borderRadius: 5,
+            minHeight: 70,
+            borderRadius: 10,
             marginStart: 15,
             marginTop: 10,
             paddingHorizontal: spacing.medium,
             paddingVertical: spacing.medium,
             position: "relative",
             zIndex: 0,
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 1,
-            },
-            shadowOpacity: 0.1,
-            shadowRadius: 1.41,
-
-            elevation: 2,
+            backgroundColor: "#FFF1EC",
           }}
         >
           <Text

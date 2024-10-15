@@ -2,11 +2,10 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
   Pressable,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { z } from "zod";
 import { useFormik } from "formik";
@@ -17,6 +16,8 @@ import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
 import axios from "axios";
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const formSchema = z
   .object({
@@ -25,19 +26,65 @@ const formSchema = z
       .string({ required_error: "Alamat email Harus Diisi" })
       .email({ message: "Format email harus benar." }),
     fullName: z.string({ required_error: "Nama Lengkap Harus Diisi" }),
-    oldPassword: z.string({
-      required_error: "Kata sandi yang lama harus diisi.",
-    }),
-    password: z.string({ required_error: "Kata sandi baru harus diisi." }),
-    confirmPassword: z.string({
-      required_error: "Konfirmasi kata sandi yang baru harus diisi.",
-    }),
+    oldPassword: z
+      .string({
+        required_error: "Kata sandi yang lama harus diisi.",
+      })
+      .optional(), // Allow this field to be optional initially
+    newPassword: z
+      .string({ required_error: "Kata sandi baru harus diisi." })
+      .optional(), // Allow this field to be optional initially
+    confirmNewPassword: z
+      .string({
+        required_error: "Konfirmasi kata sandi yang baru harus diisi.",
+      })
+      .optional(), // Allow this field to be optional initially
   })
   .superRefine((values, ctx) => {
-    if (values.password !== values.confirmPassword) {
+    const { oldPassword, newPassword, confirmNewPassword } = values;
+
+    // Check if at least one password field is filled
+    const isAnyPasswordFilled = [
+      oldPassword,
+      newPassword,
+      confirmNewPassword,
+    ].some((field) => field);
+
+    // If any password field is filled, ensure all are filled
+    if (isAnyPasswordFilled) {
+      if (!oldPassword) {
+        ctx.addIssue({
+          path: ["oldPassword"],
+          message: "Kata sandi yang lama harus diisi jika mengubah kata sandi.",
+          code: "custom",
+        });
+      }
+      if (!newPassword) {
+        ctx.addIssue({
+          path: ["newPassword"],
+          message: "Kata sandi baru harus diisi jika mengubah kata sandi.",
+          code: "custom",
+        });
+      }
+      if (!confirmNewPassword) {
+        ctx.addIssue({
+          path: ["confirmNewPassword"],
+          message:
+            "Konfirmasi kata sandi yang baru harus diisi jika mengubah kata sandi.",
+          code: "custom",
+        });
+      }
+    }
+
+    // Ensure new password and confirm new password match
+    if (
+      newPassword &&
+      confirmNewPassword &&
+      newPassword !== confirmNewPassword
+    ) {
       ctx.addIssue({
-        path: ["confirmPassword"],
-        message: "Kata sandi harus sama",
+        path: ["confirmNewPassword"],
+        message: "Kata sandi baru dan konfirmasi kata sandi harus sama.",
         code: "custom",
       });
     }
@@ -48,8 +95,8 @@ type editProfileSchema = z.infer<typeof formSchema>;
 const initialValues: editProfileSchema = {
   username: "",
   fullName: "",
-  password: "",
-  confirmPassword: "",
+  newPassword: "",
+  confirmNewPassword: "",
   oldPassword: "",
   email: "",
 };
@@ -57,50 +104,68 @@ const initialValues: editProfileSchema = {
 export default function EditProfile() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onSubmit = (values: editProfileSchema) => {
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
+  // Fetch existing user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setIsLoading(true);
+      try {
+        const refreshToken = await AsyncStorage.getItem("refreshToken");
+
+        const response = await axios.get(`${baseUrl}/api/user/user`, {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
+          },
+        }); // Update with your endpoint
+        const userData = response.data;
+
+        // Populate the form with existing user data
+        formik.setFieldValue("username", userData.username);
+        formik.setFieldValue("fullName", userData.fullName);
+        formik.setFieldValue("email", userData.email);
+        // You can decide whether to populate oldPassword based on your requirements
+      } catch (error) {
+        console.log("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const onSubmit = async (values: editProfileSchema) => {
     setIsLoading(true);
     try {
-      // const hashedPassword = await bcrypt.hash(values.confirmPassword, 10);
-      // const { password, confirmPassword, ...registerValues } = values;
-      // const sendData = { ...registerValues, password: confirmPassword };
-
-      // await axios.post("http://localhost:5000/api/admin", sendData, {
-      //   withCredentials: true,
-      //   headers: {
-      //     "Content-Type": "multipart/form-data", // Important: Set the correct content type
-      //   },
-      // });
       console.log(values);
+      // Implement your submit logic here
+      // For example, updating the user data:
+      await axios.put("http://localhost:5000/api/user", values); // Update with your endpoint
     } catch (err: any) {
       console.log(err);
     } finally {
       setIsLoading(false);
-      // setIsOpen(true);
     }
   };
 
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values,
-    setFieldValue,
-  } = useFormik({
+  const formik = useFormik({
     initialValues,
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit,
   });
 
   return (
-    <View
+    <SafeAreaView
       style={{
         paddingHorizontal: spacing.medium,
-        justifyContent: "center", // Centers vertically
-        alignItems: "center", // Centers horizontally
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
+      {/* Loading Indicator */}
+      {isLoading && <Text>Loading...</Text>}
+
       <View
         style={{
           display: "flex",
@@ -146,11 +211,11 @@ export default function EditProfile() {
         <NoAuthInput
           type="text"
           placeholder="Buat Username Anda"
-          onChangeText={handleChange("username")}
-          onBlur={handleBlur("username")}
-          value={values.username}
-          error={errors.username}
-          touched={touched.username}
+          onChangeText={formik.handleChange("username")}
+          onBlur={formik.handleBlur("username")}
+          value={formik.values.username}
+          error={formik.errors.username}
+          touched={formik.touched.username}
           placeholderTextColor={colors.brand.light}
           inputMode="username"
         />
@@ -158,11 +223,11 @@ export default function EditProfile() {
         <NoAuthInput
           type="text"
           placeholder="Masukkan Nama Lengkap Anda"
-          onChangeText={handleChange("fullName")}
-          onBlur={handleBlur("fullName")}
-          value={values.fullName}
-          error={errors.fullName}
-          touched={touched.fullName}
+          onChangeText={formik.handleChange("fullName")}
+          onBlur={formik.handleBlur("fullName")}
+          value={formik.values.fullName}
+          error={formik.errors.fullName}
+          touched={formik.touched.fullName}
           placeholderTextColor={colors.brand.light}
           inputMode="fullName"
         />
@@ -170,11 +235,11 @@ export default function EditProfile() {
         <NoAuthInput
           type="text"
           placeholder="Masukkan Alamat Email Anda"
-          onChangeText={handleChange("email")}
-          onBlur={handleBlur("email")}
-          value={values.email}
-          error={errors.email}
-          touched={touched.email}
+          onChangeText={formik.handleChange("email")}
+          onBlur={formik.handleBlur("email")}
+          value={formik.values.email}
+          error={formik.errors.email}
+          touched={formik.touched.email}
           placeholderTextColor={colors.brand.light}
           inputMode="email"
         />
@@ -219,33 +284,33 @@ export default function EditProfile() {
         <NoAuthInput
           type="password"
           placeholder="Kata Sandi Lama"
-          onChangeText={handleChange("oldPassword")}
-          onBlur={handleBlur("oldPassword")}
-          value={values.oldPassword}
-          error={errors.oldPassword}
-          touched={touched.oldPassword}
+          onChangeText={formik.handleChange("oldPassword")}
+          onBlur={formik.handleBlur("oldPassword")}
+          value={formik.values.oldPassword || ""}
+          error={formik.errors.oldPassword}
+          touched={formik.touched.oldPassword}
           placeholderTextColor={colors.brand.light}
         />
 
         <NoAuthInput
           type="password"
           placeholder="Buat Kata Sandi"
-          onChangeText={handleChange("password")}
-          onBlur={handleBlur("password")}
-          value={values.password}
-          error={errors.password}
-          touched={touched.password}
+          onChangeText={formik.handleChange("newPassword")}
+          onBlur={formik.handleBlur("newPassword")}
+          value={formik.values.newPassword || ""}
+          error={formik.errors.newPassword}
+          touched={formik.touched.newPassword}
           placeholderTextColor={colors.brand.light}
         />
 
         <NoAuthInput
           type="password"
           placeholder="Konfirmasi Kata Sandi"
-          onChangeText={handleChange("confirmPassword")}
-          onBlur={handleBlur("confirmPassword")}
-          value={values.confirmPassword}
-          error={errors.confirmPassword}
-          touched={touched.confirmPassword}
+          onChangeText={formik.handleChange("confirmNewPassword")}
+          onBlur={formik.handleBlur("confirmNewPassword")}
+          value={formik.values.confirmNewPassword || ""}
+          error={formik.errors.confirmNewPassword}
+          touched={formik.touched.confirmNewPassword}
           placeholderTextColor={colors.brand.light}
         />
 
@@ -257,56 +322,30 @@ export default function EditProfile() {
         >
           <TouchableOpacity
             style={styles.button}
-            onPress={() => handleSubmit()}
+            onPress={() => formik.handleSubmit()}
           >
             <Text style={styles.buttonText}>Simpan Perubahan</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   mainContainer: {
-    justifyContent: "center", // Centers vertically
-    alignItems: "center", // Centers horizontally
-  },
-  container: {
-    alignItems: "center",
     justifyContent: "center",
-    marginBottom: 25,
-  },
-  imageContainer: {
-    position: "relative",
-  },
-  image: {
-    width: 150,
-    height: 150,
-    borderRadius: 100,
-  },
-  clearButton: {
-    position: "absolute",
-    top: 5,
-    right: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-    borderRadius: 15,
-    padding: 5,
+    alignItems: "center",
   },
   button: {
     backgroundColor: colors.brand.main,
-    paddingHorizontal: 20, // Horizontal padding (left-right)
-    paddingVertical: 10, // Vertical padding (top-bottom)
-    alignSelf: "flex-start", // Ensure button's width is min-content
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignSelf: "flex-start",
     borderRadius: 5,
   },
   buttonText: {
     color: "white",
     fontWeight: "bold",
   },
-  // clearText: {
-  //   fontSize: 16,
-  //   fontWeight: "bold",
-  //   color: "red",
-  // },
 });
