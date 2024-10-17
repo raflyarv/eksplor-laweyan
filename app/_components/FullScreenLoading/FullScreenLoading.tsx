@@ -12,7 +12,7 @@ export default function FullScreenLoading() {
         flex: 1,
         position: "absolute",
         backgroundColor: "rgba(128, 128, 128, 0.8)",
-        zIndex: 10,
+        zIndex: 10000,
       }}
     >
       <ActivityIndicator size={46} color={colors.brand.semiwhite} />

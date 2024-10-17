@@ -26,6 +26,7 @@ export default function ReviewCards({
   dateVisited,
   content,
 }: ReviewCardsProps) {
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
   const timeIndicator = timeAgo(timestamp);
   const formattedDate = formatDateToIndonesian(dateVisited);
   return (
@@ -52,7 +53,10 @@ export default function ReviewCards({
         }}
       >
         <DynamicAvatar
-          imageUrl={userProfileImg || "https://invalid-link.com/avatar.jpg"}
+          imageUrl={
+            `${baseUrl}/${userProfileImg}` ||
+            "https://invalid-link.com/avatar.jpg"
+          }
           name={name}
           size={50}
         />

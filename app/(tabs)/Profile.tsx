@@ -16,6 +16,7 @@ import { Icon } from "react-native-elements";
 import {
   ConfirmationModal,
   DynamicAvatar,
+  EditProfileImgPicker,
   FullScreenLoading,
   MyReviewCards,
   RatingStar,
@@ -27,14 +28,31 @@ import { useAuth } from "../_hooks/context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { ReviewProps } from "../_models/review.model";
+import { z } from "zod";
+import { Formik, FormikProvider, useFormik } from "formik";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+
+const validationSchema = z.object({
+  newProfileImage: z.any().nullable(),
+  existingProfileImage: z.string().nullable(),
+});
+
+type profileFormType = z.infer<typeof validationSchema>;
+
+const initialValues: profileFormType = {
+  newProfileImage: null as File | null,
+  existingProfileImage: "",
+};
 
 export default function Profile() {
-  const { isAuthenticated, setIsAuthenticated, userData } = useAuth(); // Get the isAuthenticated status
+  const { isAuthenticated, setIsAuthenticated, userData, refetchUserData } =
+    useAuth(); // Get the isAuthenticated status
   const baseURL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false); // New state to track refresh
+  const [preview, setPreview] = useState<string | null>(null);
 
   const [userReviews, setUserReviews] = useState<ReviewProps[]>([]);
 
@@ -65,7 +83,7 @@ export default function Profile() {
       await AsyncStorage.removeItem("refreshToken");
       setIsAuthenticated(false);
       setModalVisible(false);
-      router.push("/(no-auth)/login");
+      router.push("/login");
     } catch (err: any) {
       setModalVisible(true);
       console.log(err);
@@ -94,10 +112,71 @@ export default function Profile() {
       }
     };
     fetchUserReviews();
+    refetchUserData();
   }, [refreshTrigger]);
+
+  const onSubmit = async (values: profileFormType) => {
+    setIsLoading(true);
+    const formData = new FormData();
+
+    // Append existing image URL (if applicable)
+    if (values.existingProfileImage) {
+      formData.append("existingProfileImage", values.existingProfileImage);
+    } else {
+      formData.append("existingProfileImage", "");
+    }
+
+    // Append new image file (if applicable)
+    if (values.newProfileImage && values.newProfileImage.uri) {
+      // Convert the new image URI into a file
+
+      const fileExtension = values.newProfileImage.uri.split(".").pop();
+
+      const newImageUri = values.newProfileImage.uri;
+      const fileName = `${userData.username}-profileImage.${fileExtension}`;
+      const imageType = values.newProfileImage.mimeType;
+
+      formData.append("profileImage", {
+        uri: newImageUri,
+        name: fileName,
+        type: imageType,
+      } as any);
+    } else {
+      formData.append("profileImage", "");
+    }
+
+    try {
+      const refreshToken = await AsyncStorage.getItem("refreshToken");
+
+      const response = await axios.put(`${baseUrl}/api/user/edit`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Important: Set the correct content type
+          Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
+        },
+      });
+      await refetchUserData();
+    } catch (error: any) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formik = useFormik({
+    initialValues,
+    validationSchema: toFormikValidationSchema(validationSchema),
+    onSubmit,
+  });
+
+  const { setFieldValue, values } = formik;
+
+  useEffect(() => {
+    setFieldValue("existingProfileImage", userData.profileImage || "");
+  }, [setFieldValue, userData.profileImage]);
 
   return (
     <>
+      {isLoading && <FullScreenLoading />}
       <SafeAreaView
         style={{
           flex: 1,
@@ -120,7 +199,7 @@ export default function Profile() {
                 marginBottom: 30,
               }}
             >
-              {userData.profileImage ? (
+              {/* {userData.profileImage ? (
                 <View style={styles.imageContainer}>
                   <Image
                     source={{
@@ -147,7 +226,16 @@ export default function Profile() {
                     color={colors.disable}
                   />
                 </>
-              )}
+              )} */}
+              <FormikProvider value={formik}>
+                <EditProfileImgPicker
+                  name="newProfileImage"
+                  error={formik.errors.newProfileImage}
+                  setPreview={setPreview}
+                  preview={preview}
+                  existingImage={formik.values.existingProfileImage}
+                />
+              </FormikProvider>
 
               <Text
                 style={[

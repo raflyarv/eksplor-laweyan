@@ -28,7 +28,7 @@ export default function ImageCard({
       <Pressable
         onPress={() =>
           router.push({
-            pathname: "/(auth)/details/[id]",
+            pathname: "/details/[id]",
             params: { id: id },
           })
         }
@@ -97,7 +97,8 @@ export default function ImageCard({
                       {averageRating}
                     </Text>
                     <Text style={[typography.footnote, { color: "white" }]}>
-                      {reviewTotal}
+                      {" "}
+                      ({reviewTotal})
                     </Text>
                   </View>
 

@@ -18,9 +18,9 @@ export function getOpenCloseStatus(dataJamOperasional: string): {
   indicator: string;
   opening: string | null;
   closing: string | null;
-  modifiedResult: OpeningHours[]; // Add this to the return type
+  nextOpeningDay: string | null;
+  modifiedResult: OpeningHours[];
 } {
-  // Convert the operational hours string into an array of OpeningHours
   const modifiedResult: OpeningHours[] = dataJamOperasional
     .split(", ")
     .map((entry) => {
@@ -32,7 +32,6 @@ export function getOpenCloseStatus(dataJamOperasional: string): {
       };
     });
 
-  // Get current time
   const now = new Date();
   const currentDay = daysMap[now.getDay()];
   const currentHour = now.getHours();
@@ -46,24 +45,52 @@ export function getOpenCloseStatus(dataJamOperasional: string): {
       indicator: "Tutup",
       opening: null,
       closing: null,
-      modifiedResult, // Return the modifiedResult even if todayHours is not found
+      nextOpeningDay: null,
+      modifiedResult,
     };
   }
 
-  const [openHour, openMinute] = todayHours.openHour.split(".").map(Number);
-  const [closeHour, closeMinute] = todayHours.closeHour.split(".").map(Number);
+  const [openHour, openMinute] = todayHours.openHour.split(":").map(Number);
+  const [closeHour, closeMinute] = todayHours.closeHour.split(":").map(Number);
 
-  // Check if the place is currently open
   const isOpenNow =
     (currentHour > openHour ||
       (currentHour === openHour && currentMinute >= openMinute)) &&
     (currentHour < closeHour ||
       (currentHour === closeHour && currentMinute <= closeMinute));
 
+  if (isOpenNow) {
+    return {
+      indicator: "Buka",
+      opening: todayHours.openHour,
+      closing: todayHours.closeHour,
+      nextOpeningDay: null,
+      modifiedResult,
+    };
+  }
+
+  // Find next available opening day
+  let nextOpeningDay: OpeningHours | null = null;
+  for (let i = 1; i < 7; i++) {
+    const nextDayIndex = (now.getDay() + i) % 7;
+    const nextDayName = daysMap[nextDayIndex];
+    const nextDayHours = modifiedResult.find(
+      (hours) => hours.day === nextDayName
+    );
+
+    // console.log(`Checking ${nextDayName}:`, nextDayHours);
+
+    if (nextDayHours) {
+      nextOpeningDay = nextDayHours;
+      break;
+    }
+  }
+
   return {
-    indicator: isOpenNow ? "Buka" : "Tutup",
+    indicator: "Tutup",
     opening: todayHours.openHour,
     closing: todayHours.closeHour,
-    modifiedResult, // Return the modifiedResult here
+    nextOpeningDay: nextOpeningDay?.day || null,
+    modifiedResult,
   };
 }

@@ -31,7 +31,15 @@ export default function QRScanner() {
   }
 
   const handleBarcodeScanned = ({ data }: any) => {
-    console.log("Scanned QR code data:", data);
+    // Assuming the scanned data is in the format "/detail/[id]".
+    // You may need to adjust this based on your QR code structure.
+    const id = data.split(":").pop(); // Extract the id from the scanned data.
+
+    // Navigate to the detail page with the extracted id
+    router.push({
+      pathname: "/details/[id]",
+      params: { id: id },
+    });
   };
 
   return (

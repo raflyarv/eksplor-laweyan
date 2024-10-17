@@ -1,9 +1,11 @@
+// distanceUtils.ts
+
 export const calculateDistance = (
   lat1: number,
   lon1: number,
   lat2: number,
   lon2: number
-): string => {
+): number => {
   const toRad = (value: number) => (value * Math.PI) / 180;
 
   const R = 6371000; // Radius of the Earth in meters
@@ -18,10 +20,12 @@ export const calculateDistance = (
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   const distanceInMeters = Math.round(R * c); // Distance in meters
+  return distanceInMeters; // Return distance as a number in meters
+};
 
-  // Return the distance as a string with appropriate units
+export const formatDistance = (distanceInMeters: number): string => {
   if (distanceInMeters > 900) {
-    const distanceInKm = Math.round(distanceInMeters / 1000); // Convert to kilometers and round
+    const distanceInKm = (distanceInMeters / 1000).toFixed(1); // Convert to kilometers and round
     return `${distanceInKm} km`;
   } else {
     return `${distanceInMeters} m`;

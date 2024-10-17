@@ -13,6 +13,8 @@ import ConfirmationModal from "./ConfirmationModal";
 import FullScreenLoading from "./FullScreenLoading";
 import IndicatorModal from "./IndicatorModal/IndicatorModal";
 import ContactItems from "./ContactItems";
+import EditProfileImgPicker from "./EditProfileImgPicker";
+import BookmarkButton from "./BookmarkButton";
 
 export {
   DynamicAvatar,
@@ -30,4 +32,6 @@ export {
   FullScreenLoading,
   IndicatorModal,
   ContactItems,
+  EditProfileImgPicker,
+  BookmarkButton,
 };

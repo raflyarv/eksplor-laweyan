@@ -7,13 +7,13 @@ import React, {
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { router } from "expo-router";
 
 // Define types for the context value
 type AuthContextType = {
   isAuthenticated: boolean | null;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   userData: any; // Define a type for your user data as needed
+  refetchUserData: () => Promise<void>; // Function to manually refetch user data
 };
 
 // Create context with the defined type
@@ -28,6 +28,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userData, setUserData] = useState<any>(null); // State to store user data
 
   const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+
+  // Function to fetch user data
+  const fetchUserData = async (refreshToken: string) => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/user/user`, {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
+        },
+      });
+      if (response.status === 200 && response.data) {
+        setUserData(response.data); // Store user data in state
+      }
+    } catch (error) {
+      setIsAuthenticated(false);
+    }
+  };
+
+  // Function to refetch user data (can be called from components)
+  const refetchUserData = async () => {
+    try {
+      const refreshToken = await AsyncStorage.getItem("refreshToken");
+      if (refreshToken) {
+        await fetchUserData(refreshToken);
+      }
+    } catch (error) {
+      console.error("Failed to refetch user data:", error);
+    }
+  };
 
   useEffect(() => {
     const checkToken = async () => {
@@ -47,25 +75,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkToken();
   }, []);
 
-  // Function to fetch user data
-  const fetchUserData = async (refreshToken: string) => {
-    try {
-      const response = await axios.get(`${baseUrl}/api/user/user`, {
-        headers: {
-          Authorization: `Bearer ${refreshToken}`, // Use the refresh token as Bearer token
-        },
-      });
-      if (response.status === 200 && response.data) {
-        setUserData(response.data); // Store user data in state
-      }
-    } catch (error) {
-      setIsAuthenticated(false);
-    }
-  };
-
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, setIsAuthenticated, userData }}
+      value={{ isAuthenticated, setIsAuthenticated, userData, refetchUserData }}
     >
       {children}
     </AuthContext.Provider>

@@ -13,4 +13,7 @@ export const colors = {
     main: "#222222",
     disable: "#3C3D37",
   },
+  background: {
+    offwhite: "#F5F5F4",
+  },
 };

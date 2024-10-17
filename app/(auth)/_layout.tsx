@@ -12,7 +12,7 @@ export default function AuthLayout() {
   useEffect(() => {
     // If the user is not authenticated, redirect to the no-auth/login page
     if (isAuthenticated === false) {
-      router.replace("/(no-auth)/login");
+      router.replace("/login");
     }
   }, [isAuthenticated]);
 
@@ -57,6 +57,13 @@ export default function AuthLayout() {
 
         <Stack.Screen
           name="scan-qr/index"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="search/index"
           options={{
             headerShown: false,
           }}

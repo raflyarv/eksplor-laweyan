@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   Pressable,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { spacing } from "@/theme/spacing";
 
 import { z } from "zod";
@@ -55,9 +55,9 @@ export default function Login() {
       await AsyncStorage.setItem("refreshToken", response.data.refreshToken);
       setIsAuthenticated(true);
 
-      console.log(isAuthenticated);
-      if (isAuthenticated) {
-        router.replace("/(tabs)");
+      const refreshToken = await AsyncStorage.getItem("refreshToken");
+      if (isAuthenticated && refreshToken) {
+        router.push("/(tabs)");
       }
     } catch (err: any) {
       console.log(err);
@@ -67,6 +67,17 @@ export default function Login() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const redirect = async () => {
+      const refreshToken = await AsyncStorage.getItem("refreshToken");
+      if (isAuthenticated && refreshToken) {
+        router.push("/(tabs)");
+      }
+    };
+
+    redirect();
+  }, [isAuthenticated]);
 
   const toggleModal = () => {
     if (operationSuccess === true) {

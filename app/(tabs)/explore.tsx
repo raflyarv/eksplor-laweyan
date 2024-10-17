@@ -20,6 +20,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { MenuView } from "@react-native-menu/menu";
 import { Picker } from "@react-native-picker/picker";
 import { SlidingContainer } from "../_components";
+import useFetchSites from "../_hooks/api/sites/useFetchSites";
+import { router } from "expo-router";
 
 const INITIAL_REGION = {
   latitude: -7.56978246243824,
@@ -60,37 +62,14 @@ export default function Explore() {
   const [errorMsg, setErrorMsg] = useState<any>(null);
 
   const [currentLocation, setCurrentLocation] = useState<any>({});
+  const { siteLists } = useFetchSites();
 
   const [chosenSource, setIsChosenSource] = useState<any>({});
   const [chosenDestination, setIsChosenDestination] = useState<any>({});
 
-  const handleMapPress = (coordinates: {}) => {
-    setIsChosenDestination(coordinates);
-    console.log(coordinates);
+  const handleMapPress = (name: string) => {
+    setIsChosenDestination(name);
   };
-
-  //   const { status } = await Location.requestForegroundPermissionsAsync();
-  //   if (status !== "granted") {
-  //     setErrorMsg("Permission for the device location was denied.");
-  //   }
-  // };
-
-  // const getCurrentLocation = async () => {
-  //   const {
-  //     coords: { latitude, longitude },
-  //   } = await Location.getCurrentPositionAsync();
-  //   return { latitude, longitude };
-  // };
-
-  // useEffect(() => {
-  //   const fetchLocation = async () => {
-  //     await requestLocationPermission();
-  //     const location = await getCurrentLocation();
-  //     setCurrentLocation(location);
-  //   };
-
-  //   fetchLocation();
-  // });
 
   useEffect(() => {
     (async () => {
@@ -107,11 +86,6 @@ export default function Explore() {
     })();
   }, []);
 
-  console.log(currentLocation);
-
-  const [sortOption, setSortOption] = useState("rating");
-  const [categoryFilter, setCategoryFilter] = useState("");
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -120,24 +94,26 @@ export default function Explore() {
           style={styles.map}
           initialRegion={INITIAL_REGION}
           showsUserLocation
-          // ref={mapRef}
-          // onRegionChangeComplete={onRegionChange}
         >
-          {/* <Polyline
-          coordinates={[
-            { latitude: -7.569718650419353, longitude: 110.79690882605378 },
-            { latitude: -7.570019098590299, longitude: 110.79563008293876 },
-          ]}
-        /> */}
-          {markers.map((marker, index) => (
+          {siteLists?.map((marker, index) => (
             <Marker
               key={index}
-              coordinate={marker.coordinates}
-              onPress={() => handleMapPress(marker.coordinates)}
+              coordinate={{
+                latitude: marker.latitude,
+                longitude: marker.longitude,
+              }}
+              onPress={() => handleMapPress(marker.siteName)}
             >
-              <Callout>
+              <Callout
+                onPress={() =>
+                  router.push({
+                    pathname: "/details/[id]",
+                    params: { id: marker.id },
+                  })
+                }
+              >
                 <View style={{ padding: 10 }}>
-                  <Text> {marker.name} </Text>
+                  <Text> {marker.siteName} </Text>
                 </View>
               </Callout>
             </Marker>
@@ -145,37 +121,10 @@ export default function Explore() {
         </MapView>
 
         <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <TextInput
-              style={[styles.input, typography]}
-              placeholder="Pencarian"
-              placeholderTextColor={colors.disable}
-            />
-            <MaterialIcons name="search" size={32} color={colors.brand.main} />
-          </View>
-
-          <View
-            style={{
-              width: 140,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "white",
-              borderRadius: 5,
-              paddingVertical: 8,
-              gap: 3,
-            }}
-          >
-            <MaterialIcons name="tune" size={20} color={colors.brand.main} />
-            <Text style={[typography.subhead, { color: colors.brand.main }]}>
-              {" "}
-              Sort/Filter{" "}
-            </Text>
-          </View>
+          <Text style={[typography.title1Bold, { color: colors.brand.main }]}>
+            Explore
+          </Text>
         </View>
-
-        {/* <SlidingContainer /> */}
       </View>
     </SafeAreaView>
   );
@@ -210,7 +159,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     display: "flex",
     flexDirection: "column",
-    alignItems: "flex-end",
     rowGap: 10,
     paddingHorizontal: spacing.medium,
     marginTop: spacing.medium,

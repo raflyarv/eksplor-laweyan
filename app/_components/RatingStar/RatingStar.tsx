@@ -1,5 +1,5 @@
 import { colors } from "@/theme/colors";
-import React, { useState } from "react";
+import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 
@@ -17,20 +17,19 @@ export default function RatingStar({
   isEditable = false,
 }: RatingStarProps) {
   // Create an array representing the number of stars
-  const stars = Array(maxStars).fill(0);
-
-  const [is, setIs] = useState(0);
+  const stars = Array.from({ length: maxStars }, (_, index) => index + 1);
 
   // Render the stars based on rating and whether the component is editable or read-only
   return (
     <View style={styles.starContainer}>
-      {stars.map((_, index) => {
-        const starNumber = index + 1;
+      {stars.map((starNumber) => {
+        // Determine if the current star should be full, half, or empty
+        const isFullStar = starNumber <= rating;
+        const isHalfStar = starNumber > rating && starNumber - 1 < rating;
 
-        // Show full star if rating is >= starNumber, otherwise show empty star
         return (
           <TouchableOpacity
-            key={index}
+            key={starNumber}
             onPress={() => {
               if (isEditable && setRating) {
                 setRating(starNumber);
@@ -39,9 +38,12 @@ export default function RatingStar({
             disabled={!isEditable} // Disable press when it's read-only
           >
             <Icon
-              name={starNumber <= rating ? "star" : "star-border"}
+              // Show full, half, or empty star based on rating
+              name={
+                isFullStar ? "star" : isHalfStar ? "star-half" : "star-border"
+              }
               type="material"
-              color={starNumber <= rating ? colors.warning : "#B0B0B0"}
+              color={isFullStar || isHalfStar ? colors.warning : "#B0B0B0"}
               size={20}
             />
           </TouchableOpacity>
@@ -52,11 +54,6 @@ export default function RatingStar({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   starContainer: {
     flexDirection: "row",
     justifyContent: "center",
