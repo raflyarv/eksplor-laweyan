@@ -101,7 +101,7 @@ export default function MyReviewCards({
           }}
         >
           <Text
-            style={[typography.headline]}
+            style={[typography.title3Bold]}
             ellipsizeMode="tail"
             numberOfLines={2}
           >
@@ -161,7 +161,7 @@ export default function MyReviewCards({
       >
         <RatingStar rating={rating} isEditable={false} />
         <Icon name="circle" type="material" size={10} color={colors.disable} />
-        <Text style={[typography.footnote]}> {timeIndicator} </Text>
+        <Text style={[typography.subhead]}> {timeIndicator} </Text>
       </View>
 
       <View
@@ -171,9 +171,7 @@ export default function MyReviewCards({
           marginBottom: 8,
         }}
       >
-        <Text style={[typography.footnote]}>
-          Dikujungi pada {formattedDate}
-        </Text>
+        <Text style={[typography.subhead]}>Dikujungi pada {formattedDate}</Text>
       </View>
 
       <View
@@ -185,7 +183,7 @@ export default function MyReviewCards({
         }}
       >
         <Text
-          style={[typography.subhead]}
+          style={[typography.callout]}
           ellipsizeMode="tail"
           numberOfLines={4}
         >

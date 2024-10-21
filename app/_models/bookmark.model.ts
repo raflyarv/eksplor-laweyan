@@ -10,6 +10,7 @@ interface Review {
 }
 
 export interface BookmarkProps {
+  createdAt: string | number | Date;
   _id: string;
   siteName: string;
   address: string;

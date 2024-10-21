@@ -5,13 +5,13 @@ export interface OpeningHours {
 }
 
 const daysMap: { [key: number]: string } = {
-  0: "Minggu",
-  1: "Senin",
-  2: "Selasa",
-  3: "Rabu",
-  4: "Kamis",
-  5: "Jumat",
-  6: "Sabtu",
+  0: "Senin",
+  1: "Selasa",
+  2: "Rabu",
+  3: "Kamis",
+  4: "Jumat",
+  5: "Sabtu",
+  6: "Minggu",
 };
 
 export function getOpenCloseStatus(dataJamOperasional: string): {
@@ -21,19 +21,34 @@ export function getOpenCloseStatus(dataJamOperasional: string): {
   nextOpeningDay: string | null;
   modifiedResult: OpeningHours[];
 } {
-  const modifiedResult: OpeningHours[] = dataJamOperasional
-    .split(", ")
-    .map((entry) => {
-      const [day, open, , close] = entry.split(" ");
-      return {
+  // Initialize modifiedResult to include all days with "Tutup"
+  const modifiedResult: OpeningHours[] = Object.keys(daysMap).map((key) => {
+    const day = daysMap[Number(key)];
+    return {
+      day,
+      openHour: "Tutup", // Default to "Tutup"
+      closeHour: "Tutup", // Default to "Tutup"
+    };
+  });
+
+  // Parse the input operational hours
+  dataJamOperasional.split(", ").forEach((entry) => {
+    const [day, open, , close] = entry.split(" ");
+    const index = Object.values(daysMap).indexOf(day);
+
+    // Update the corresponding day's open and close hours if it exists
+    if (index !== -1) {
+      modifiedResult[index] = {
         day,
         openHour: open,
         closeHour: close,
       };
-    });
+    }
+  });
 
   const now = new Date();
-  const currentDay = daysMap[now.getDay()];
+  const currentDayIndex = (now.getDay() + 6) % 7; // Shift current day index to align with new mapping
+  const currentDay = daysMap[currentDayIndex];
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
@@ -72,13 +87,11 @@ export function getOpenCloseStatus(dataJamOperasional: string): {
   // Find next available opening day
   let nextOpeningDay: OpeningHours | null = null;
   for (let i = 1; i < 7; i++) {
-    const nextDayIndex = (now.getDay() + i) % 7;
+    const nextDayIndex = (currentDayIndex + i) % 7;
     const nextDayName = daysMap[nextDayIndex];
     const nextDayHours = modifiedResult.find(
-      (hours) => hours.day === nextDayName
+      (hours) => hours.day === nextDayName && hours.openHour !== "Tutup"
     );
-
-    // console.log(`Checking ${nextDayName}:`, nextDayHours);
 
     if (nextDayHours) {
       nextOpeningDay = nextDayHours;

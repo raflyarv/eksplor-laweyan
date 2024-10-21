@@ -3,6 +3,7 @@ export const colors = {
     main: "#B85C38",
     light: "#B97459",
     semiwhite: "#fadfd4",
+    semitransparent: "#FFF1EC",
   },
   primary: "#2030CB",
   danger: "#C12020",

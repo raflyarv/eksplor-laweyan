@@ -154,8 +154,6 @@ export default function Register() {
       // Set the image URI to display it in the UI (optional)
       setImage(result.assets[0].uri);
       setFieldValue("profileImage", result.assets[0]);
-    } else {
-      console.log("Image selection was canceled");
     }
   };
 
@@ -310,7 +308,7 @@ export default function Register() {
             flexDirection: "row",
           }}
         >
-          <Text style={[typography.footnote, { fontWeight: 500 }]}>
+          <Text style={[typography.subhead, { fontWeight: 500 }]}>
             {" "}
             Sudah memiliki akun?{" "}
           </Text>
@@ -323,7 +321,7 @@ export default function Register() {
           >
             <Text
               style={[
-                typography.footnote,
+                typography.subhead,
                 {
                   textDecorationLine: "underline",
                   color: colors.brand.main,
@@ -336,27 +334,6 @@ export default function Register() {
           </Pressable>
         </View>
 
-        <Pressable
-          style={{
-            margin: 0,
-            padding: 0,
-          }}
-          onPress={() => router.push("/verify-email")}
-        >
-          <Text
-            style={[
-              typography.footnote,
-              {
-                textDecorationLine: "underline",
-                color: colors.brand.main,
-                fontWeight: 500,
-              },
-            ]}
-          >
-            Verifikasi Email
-          </Text>
-        </Pressable>
-
         {/* Submit Button */}
         <View
           style={{
@@ -367,7 +344,7 @@ export default function Register() {
             style={styles.button}
             onPress={() => handleSubmit()}
           >
-            <Text style={styles.buttonText}>Submit</Text>
+            <Text style={styles.buttonText}>Buat Akun</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -413,6 +390,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
   // clearText: {

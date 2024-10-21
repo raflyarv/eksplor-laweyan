@@ -33,7 +33,8 @@ export default function ReviewCards({
     <View
       style={{
         width: 360,
-        height: "auto",
+        minHeight: 100,
+        maxHeight: 400,
         paddingHorizontal: 15,
         paddingVertical: 15,
 
@@ -49,7 +50,7 @@ export default function ReviewCards({
           flexDirection: "row",
           gap: 5,
           alignItems: "center",
-          marginBottom: 5,
+          marginBottom: 10,
         }}
       >
         <DynamicAvatar
@@ -66,8 +67,8 @@ export default function ReviewCards({
             flexDirection: "column",
           }}
         >
-          <Text style={[typography.subhead]}> {name} </Text>
-          <Text style={[typography.footnote]}> {reviewCount} ulasan </Text>
+          <Text style={[typography.headline]}> {name} </Text>
+          <Text style={[typography.subhead]}> {reviewCount} ulasan </Text>
         </View>
       </View>
 
@@ -83,7 +84,7 @@ export default function ReviewCards({
       >
         <RatingStar rating={rating} isEditable={false} />
         <Icon name="circle" type="material" size={8} color={colors.disable} />
-        <Text style={[typography.footnote]}> {timeIndicator} </Text>
+        <Text style={[typography.subhead]}> {timeIndicator} </Text>
       </View>
 
       <View
@@ -93,8 +94,9 @@ export default function ReviewCards({
           marginBottom: 8,
         }}
       >
-        <Text style={[typography.footnote]}>
-          Dikunjungi pada {formattedDate}
+        <Text style={[typography.subhead]}>
+          Dikunjungi pada
+          <Text style={[{ fontWeight: 600 }]}> {formattedDate} </Text>
         </Text>
       </View>
 
@@ -107,7 +109,7 @@ export default function ReviewCards({
         }}
       >
         <Text
-          style={[typography.subhead]}
+          style={[typography.callout]}
           ellipsizeMode="tail"
           numberOfLines={5}
         >

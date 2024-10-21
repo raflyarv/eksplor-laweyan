@@ -48,7 +48,6 @@ export default function Login() {
   const onSubmit = async (values: loginFormSchema) => {
     setIsLoading(true);
     const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
-    console.log(values);
     try {
       const response = await axios.post(`${baseUrl}/auth/user/login`, values);
 
@@ -150,7 +149,7 @@ export default function Login() {
           >
             <Text
               style={[
-                typography.footnote,
+                typography.subhead,
                 {
                   color: colors.brand.main,
                   fontWeight: 500,
@@ -171,7 +170,7 @@ export default function Login() {
             justifyContent: "flex-end",
           }}
         >
-          <Text style={[typography.footnote, { fontWeight: 500 }]}>
+          <Text style={[typography.subhead, { fontWeight: 500 }]}>
             {" "}
             Belum memiliki akun?{" "}
           </Text>
@@ -184,7 +183,7 @@ export default function Login() {
           >
             <Text
               style={[
-                typography.footnote,
+                typography.subhead,
                 {
                   textDecorationLine: "underline",
                   color: colors.brand.main,
@@ -207,7 +206,7 @@ export default function Login() {
             style={styles.button}
             onPress={() => handleSubmit()}
           >
-            <Text style={styles.buttonText}>Submit</Text>
+            <Text style={styles.buttonText}>Masuk</Text>
           </TouchableOpacity>
         </View>
 
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
     flex: 1, // Occupy full screen height
     justifyContent: "center", // Centers vertically
     alignItems: "center", // Centers horizontally
-    backgroundColor: "#f0f0f0", // Optional: Background color for better visuals
+    backgroundColor: "white", // Optional: Background color for better visuals
     paddingHorizontal: 20,
   },
   input: {
@@ -257,6 +256,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
 });

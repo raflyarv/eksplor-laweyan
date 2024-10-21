@@ -4,6 +4,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { toFormikValidationSchema } from "zod-formik-adapter";
@@ -12,6 +14,7 @@ import { useFormik } from "formik";
 import {
   ConfirmationModal,
   FullScreenLoading,
+  IndicatorModal,
   NoAuthInput,
 } from "@/app/_components";
 import { colors } from "@/theme/colors";
@@ -114,6 +117,15 @@ export default function EditProfile() {
   const [formData, setFormData] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(false); // New state to track refresh
 
+  const [responseModal, setResponseModal] = useState<boolean>(false);
+  const [responseImageUrl, setResponseImageUrl] = useState<string>("");
+  const [responseTitle, setResponseTitle] = useState<string>("");
+  const [responseDescription, setResponseDescription] = useState<string>("");
+
+  const toggleResponse = () => {
+    setResponseModal(false);
+  };
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -143,8 +155,8 @@ export default function EditProfile() {
         formik.setFieldValue("fullName", userData.fullName);
         formik.setFieldValue("email", userData.email);
         // You can decide whether to populate oldPassword based on your requirements
-      } catch (error) {
-        console.log("Error fetching user data:", error);
+      } catch (error: any) {
+        console.error("Error fetching user", error);
       } finally {
         setIsLoading(false);
       }
@@ -181,11 +193,33 @@ export default function EditProfile() {
       handleRefresh();
       refetchUserData();
       setModalVisible(false);
+
+      if (response.status === 200) {
+        setResponseTitle("Berhasil Mengubah Data!");
+        setResponseDescription("");
+        setResponseModal(true);
+        setResponseImageUrl("edit-success");
+      }
     } catch (error: any) {
-      console.log(error);
+      if (error.status === 401) {
+        setResponseTitle("Kata Sandi Lama Salah!");
+        setResponseDescription(
+          "Silahkan masukkan ulang kata sandi lama, atau lakukan reset password."
+        );
+        setResponseModal(true);
+        setResponseImageUrl("password-not-same");
+      } else if (error.status === 400) {
+        setResponseTitle("Username sudah terdaftar!");
+        setResponseDescription(
+          "Silahkan coba memasukkan username yang berbeda."
+        );
+        setResponseModal(true);
+        setResponseImageUrl("already-exist");
+      }
     } finally {
       setIsLoading(false);
       setModalVisible(false);
+      refetchUserData();
     }
   };
 
@@ -198,188 +232,221 @@ export default function EditProfile() {
   return (
     <>
       {isLoading && <FullScreenLoading />}
+      <KeyboardAvoidingView>
+        <ScrollView>
+          <SafeAreaView
+            style={{
+              paddingHorizontal: spacing.medium,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {/* Loading Indicator */}
+            <View
+              style={{
+                display: "flex",
+                width: "100%",
+                flexDirection: "row",
+                marginVertical: 30,
+                columnGap: 15,
+                alignItems: "flex-start",
+              }}
+            >
+              <TouchableOpacity onPress={() => router.push("/Profile")}>
+                <MaterialIcons
+                  name="arrow-back"
+                  size={32}
+                  color={colors.brand.main}
+                />
+              </TouchableOpacity>
+              <Text
+                style={[
+                  typography.title2Bold,
+                  {
+                    marginBottom: spacing.medium,
+                  },
+                ]}
+              >
+                Edit Profil{" "}
+              </Text>
+            </View>
+            <View style={styles.mainContainer}>
+              <Text
+                style={[
+                  typography.title3Bold,
+                  {
+                    alignSelf: "flex-start",
+                    marginBottom: 15,
+                    color: colors.brand.light,
+                  },
+                ]}
+              >
+                {" "}
+                Informasi Akun Anda{" "}
+              </Text>
+              <NoAuthInput
+                type="text"
+                placeholder="Buat Username Anda"
+                onChangeText={formik.handleChange("username")}
+                onBlur={formik.handleBlur("username")}
+                value={formik.values.username}
+                error={formik.errors.username}
+                touched={formik.touched.username}
+                placeholderTextColor={colors.brand.light}
+                inputMode="username"
+              />
 
-      <SafeAreaView
-        style={{
-          paddingHorizontal: spacing.medium,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        {/* Loading Indicator */}
+              <NoAuthInput
+                type="text"
+                placeholder="Masukkan Nama Lengkap Anda"
+                onChangeText={formik.handleChange("fullName")}
+                onBlur={formik.handleBlur("fullName")}
+                value={formik.values.fullName}
+                error={formik.errors.fullName}
+                touched={formik.touched.fullName}
+                placeholderTextColor={colors.brand.light}
+                inputMode="fullName"
+              />
 
-        <View
-          style={{
-            display: "flex",
-            width: "100%",
-            flexDirection: "row",
-            marginVertical: 30,
-            columnGap: 15,
-            alignItems: "flex-start",
-          }}
-        >
-          <TouchableOpacity onPress={() => router.push("/Profile")}>
-            <MaterialIcons
-              name="arrow-back"
-              size={32}
-              color={colors.brand.main}
+              <NoAuthInput
+                type="text"
+                placeholder="Masukkan Alamat Email Anda"
+                onChangeText={formik.handleChange("email")}
+                onBlur={formik.handleBlur("email")}
+                value={formik.values.email}
+                error={formik.errors.email}
+                touched={formik.touched.email}
+                placeholderTextColor={colors.brand.light}
+                inputMode="email"
+              />
+
+              <Pressable
+                style={{
+                  margin: 0,
+                  paddingHorizontal: 10,
+                  alignSelf: "flex-end",
+                  marginBottom: 20,
+                }}
+                onPress={() => router.push("/verify-email")}
+              >
+                <Text
+                  style={[
+                    typography.footnote,
+                    {
+                      textDecorationLine: "underline",
+                      color: colors.brand.main,
+                      fontWeight: 500,
+                    },
+                  ]}
+                >
+                  Verifikasi Email
+                </Text>
+              </Pressable>
+
+              <Text
+                style={[
+                  typography.title3Bold,
+                  {
+                    alignSelf: "flex-start",
+                    marginBottom: 15,
+                    color: colors.brand.light,
+                  },
+                ]}
+              >
+                {" "}
+                Ganti Kata Sandi{" "}
+              </Text>
+
+              <NoAuthInput
+                type="password"
+                placeholder="Kata Sandi Lama"
+                onChangeText={formik.handleChange("oldPassword")}
+                onBlur={formik.handleBlur("oldPassword")}
+                value={formik.values.oldPassword || ""}
+                error={formik.errors.oldPassword}
+                touched={formik.touched.oldPassword}
+                placeholderTextColor={colors.brand.light}
+              />
+
+              <NoAuthInput
+                type="password"
+                placeholder="Buat Kata Sandi"
+                onChangeText={formik.handleChange("newPassword")}
+                onBlur={formik.handleBlur("newPassword")}
+                value={formik.values.newPassword || ""}
+                error={formik.errors.newPassword}
+                touched={formik.touched.newPassword}
+                placeholderTextColor={colors.brand.light}
+              />
+
+              <NoAuthInput
+                type="password"
+                placeholder="Konfirmasi Kata Sandi"
+                onChangeText={formik.handleChange("confirmNewPassword")}
+                onBlur={formik.handleBlur("confirmNewPassword")}
+                value={formik.values.confirmNewPassword || ""}
+                error={formik.errors.confirmNewPassword}
+                touched={formik.touched.confirmNewPassword}
+                placeholderTextColor={colors.brand.light}
+              />
+
+              <Pressable
+                style={{
+                  margin: 0,
+                  paddingHorizontal: 10,
+                  alignSelf: "flex-end",
+                  marginBottom: 20,
+                }}
+                onPress={() => router.push("/forgot-password")}
+              >
+                <Text
+                  style={[
+                    typography.footnote,
+                    {
+                      textDecorationLine: "underline",
+                      color: colors.brand.main,
+                      fontWeight: 500,
+                    },
+                  ]}
+                >
+                  Lupa Password?
+                </Text>
+              </Pressable>
+
+              {/* Submit Button */}
+              <View
+                style={{
+                  alignSelf: "flex-end",
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => formik.handleSubmit()}
+                >
+                  <Text style={styles.buttonText}>Simpan Perubahan</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <ConfirmationModal
+              isVisible={isModalVisible}
+              onClose={toggleModal}
+              imageUrl="edit"
+              title="Anda yakin Ingin Mengubah Data ?"
+              onCloseAfter={() => handleAPIEditUser(formData)}
+              buttonText="Lanjutkan"
             />
-          </TouchableOpacity>
-          <Text
-            style={[
-              typography.title2Bold,
-              {
-                marginBottom: spacing.medium,
-              },
-            ]}
-          >
-            Edit Profil{" "}
-          </Text>
-        </View>
-        <View style={styles.mainContainer}>
-          <Text
-            style={[
-              typography.title3Bold,
-              {
-                alignSelf: "flex-start",
-                marginBottom: 15,
-                color: colors.brand.light,
-              },
-            ]}
-          >
-            {" "}
-            Informasi Akun Anda{" "}
-          </Text>
-          <NoAuthInput
-            type="text"
-            placeholder="Buat Username Anda"
-            onChangeText={formik.handleChange("username")}
-            onBlur={formik.handleBlur("username")}
-            value={formik.values.username}
-            error={formik.errors.username}
-            touched={formik.touched.username}
-            placeholderTextColor={colors.brand.light}
-            inputMode="username"
-          />
 
-          <NoAuthInput
-            type="text"
-            placeholder="Masukkan Nama Lengkap Anda"
-            onChangeText={formik.handleChange("fullName")}
-            onBlur={formik.handleBlur("fullName")}
-            value={formik.values.fullName}
-            error={formik.errors.fullName}
-            touched={formik.touched.fullName}
-            placeholderTextColor={colors.brand.light}
-            inputMode="fullName"
-          />
-
-          <NoAuthInput
-            type="text"
-            placeholder="Masukkan Alamat Email Anda"
-            onChangeText={formik.handleChange("email")}
-            onBlur={formik.handleBlur("email")}
-            value={formik.values.email}
-            error={formik.errors.email}
-            touched={formik.touched.email}
-            placeholderTextColor={colors.brand.light}
-            inputMode="email"
-          />
-
-          <Pressable
-            style={{
-              margin: 0,
-              paddingHorizontal: 10,
-              alignSelf: "flex-end",
-              marginBottom: 20,
-            }}
-            onPress={() => router.push("/verify-email")}
-          >
-            <Text
-              style={[
-                typography.footnote,
-                {
-                  textDecorationLine: "underline",
-                  color: colors.brand.main,
-                  fontWeight: 500,
-                },
-              ]}
-            >
-              Verifikasi Email
-            </Text>
-          </Pressable>
-
-          <Text
-            style={[
-              typography.title3Bold,
-              {
-                alignSelf: "flex-start",
-                marginBottom: 15,
-                color: colors.brand.light,
-              },
-            ]}
-          >
-            {" "}
-            Ganti Kata Sandi{" "}
-          </Text>
-
-          <NoAuthInput
-            type="password"
-            placeholder="Kata Sandi Lama"
-            onChangeText={formik.handleChange("oldPassword")}
-            onBlur={formik.handleBlur("oldPassword")}
-            value={formik.values.oldPassword || ""}
-            error={formik.errors.oldPassword}
-            touched={formik.touched.oldPassword}
-            placeholderTextColor={colors.brand.light}
-          />
-
-          <NoAuthInput
-            type="password"
-            placeholder="Buat Kata Sandi"
-            onChangeText={formik.handleChange("newPassword")}
-            onBlur={formik.handleBlur("newPassword")}
-            value={formik.values.newPassword || ""}
-            error={formik.errors.newPassword}
-            touched={formik.touched.newPassword}
-            placeholderTextColor={colors.brand.light}
-          />
-
-          <NoAuthInput
-            type="password"
-            placeholder="Konfirmasi Kata Sandi"
-            onChangeText={formik.handleChange("confirmNewPassword")}
-            onBlur={formik.handleBlur("confirmNewPassword")}
-            value={formik.values.confirmNewPassword || ""}
-            error={formik.errors.confirmNewPassword}
-            touched={formik.touched.confirmNewPassword}
-            placeholderTextColor={colors.brand.light}
-          />
-
-          {/* Submit Button */}
-          <View
-            style={{
-              alignSelf: "flex-end",
-            }}
-          >
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => formik.handleSubmit()}
-            >
-              <Text style={styles.buttonText}>Simpan Perubahan</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <ConfirmationModal
-          isVisible={isModalVisible}
-          onClose={toggleModal}
-          imageUrl="edit"
-          title="Anda yakin Ingin Mengubah Data ?"
-          onCloseAfter={() => handleAPIEditUser(formData)}
-          buttonText="Lanjutkan"
-        />
-      </SafeAreaView>
+            <IndicatorModal
+              isVisible={responseModal}
+              onClose={toggleResponse}
+              imageUrl={responseImageUrl}
+              title={responseTitle}
+              description={responseDescription}
+            />
+          </SafeAreaView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   );
 }

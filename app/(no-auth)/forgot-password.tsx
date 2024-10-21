@@ -98,7 +98,7 @@ export default function ForgotPassword() {
           }}
         >
           <Text style={[typography.title2Bold]}>Lupa Password </Text>
-          <Text style={[typography.footnote]}>
+          <Text style={[typography.subhead]}>
             Masukkan alamat email yang sudah terdaftar untuk melakukan reset
             password.
           </Text>
@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
 });

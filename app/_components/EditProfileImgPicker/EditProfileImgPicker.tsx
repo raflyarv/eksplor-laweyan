@@ -12,6 +12,7 @@ import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFormikContext } from "formik";
 import { colors } from "@/theme/colors"; // Replace with your color definitions
+import { typography } from "@/theme/typography";
 
 interface EditProfileImgPickerProps {
   name: string;
@@ -19,6 +20,7 @@ interface EditProfileImgPickerProps {
   setPreview: Dispatch<SetStateAction<string | null>>;
   error: any;
   existingImage: string | null; // Add this prop to manage the existing profile image
+  onSubmit: () => void;
 }
 
 export default function EditProfileImgPicker({
@@ -27,13 +29,13 @@ export default function EditProfileImgPicker({
   setPreview,
   error,
   existingImage, // Handle existing image
+  onSubmit,
 }: EditProfileImgPickerProps) {
   const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
   const [image, setImage] = useState<string | null>(null);
 
-  // Initialize with existing image
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
-  const { setFieldValue, submitForm } = useFormikContext();
+  const { setFieldValue, submitForm, resetForm, values } = useFormikContext();
 
   // Function to open the image picker
   const pickImage = async () => {
@@ -51,8 +53,9 @@ export default function EditProfileImgPicker({
       setImage(selectedImage);
       setPreview(selectedImage);
       setFieldValue(name, result.assets[0]);
+      setFieldValue("existingProfileImage", null);
 
-      submitForm(); // Auto-submit form when image is picked
+      onSubmit(); // Auto-submit form when image is picked
     }
   };
 
@@ -62,7 +65,9 @@ export default function EditProfileImgPicker({
     setPreview(null);
     setFieldValue(name, null);
     setFieldValue("existingProfileImage", null);
-    submitForm(); // Auto-submit form when image is deleted
+    resetForm();
+    setModalVisible(false);
+    onSubmit(); // Auto-submit form when image is deleted
   };
 
   // Open Modal
@@ -85,57 +90,75 @@ export default function EditProfileImgPicker({
   }, [existingImage, preview]);
 
   return (
-    <View>
-      {image ? (
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: image }} style={styles.image} />
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={handleDeleteImage}
-          >
-            <MaterialIcons name="delete" size={24} color={colors.danger} />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          <MaterialIcons
-            name="account-circle"
-            size={150}
-            color={colors.disable}
-          />
-          <TouchableOpacity
-            onPress={handleEditProfile}
-            style={styles.editProfileButton}
-          >
-            <Text style={styles.editText}>Edit Foto Profil </Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      {/* Modal for choosing image or deleting */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Button title="Pilih Gambar" onPress={pickImage} />
-            {existingImage && (
-              <Button
-                title="Hapus Gambar Profil"
-                color={colors.danger}
-                onPress={handleDeleteImage}
-              />
-            )}
-            <Button title="Batal" onPress={() => setModalVisible(false)} />
+    <TouchableOpacity onPress={handleEditProfile} activeOpacity={0.7}>
+      <View>
+        {image ? (
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: image }} style={styles.image} />
           </View>
-        </View>
-      </Modal>
-    </View>
+        ) : (
+          <View style={styles.placeholderContainer}>
+            <MaterialIcons name="account-circle" size={150} color="white" />
+          </View>
+        )}
+
+        {error && <Text style={styles.errorText}>{error}</Text>}
+
+        {/* Modal for choosing image or deleting */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              {/* Text with Icon for selecting an image */}
+              <TouchableOpacity style={styles.modalOption} onPress={pickImage}>
+                <MaterialIcons name="image" size={24} color={colors.success} />
+                <Text style={[typography.subhead, styles.modalOptionText]}>
+                  Pilih Gambar
+                </Text>
+              </TouchableOpacity>
+
+              {/* Text with Icon for deleting the existing profile image */}
+              {existingImage && (
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={handleDeleteImage}
+                >
+                  <MaterialIcons
+                    name="delete"
+                    size={24}
+                    color={colors.danger}
+                  />
+                  <Text style={[typography.subhead, styles.modalOptionText]}>
+                    Hapus Gambar Profil
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[
+                  styles.modalOption,
+                  { alignSelf: "flex-end", justifyContent: "flex-end" },
+                ]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text
+                  style={[
+                    typography.subhead,
+                    styles.modalOptionText,
+                    { color: colors.danger },
+                  ]}
+                >
+                  Batal{" "}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -157,9 +180,9 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 5,
   },
-  editProfileButton: {
+  placeholderContainer: {
     alignItems: "center",
-    marginVertical: 10,
+    marginBottom: 20,
   },
   editText: {
     color: colors.primary, // Blue text
@@ -183,5 +206,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     alignItems: "center",
+  },
+  modalOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    width: "100%",
+  },
+  modalOptionText: {
+    fontWeight: 600,
+    marginLeft: 10,
+    color: colors.brand.main,
   },
 });

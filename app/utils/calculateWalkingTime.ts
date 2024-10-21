@@ -13,5 +13,14 @@ export const calculateWalkingTime = (distanceInMeters: number): string => {
   // Convert seconds to minutes
   const walkingTimeInMinutes = Math.round(walkingTimeInSeconds / 60);
 
-  return `${walkingTimeInMinutes} min`;
+  // Calculate hours and remaining minutes
+  const hours = Math.floor(walkingTimeInMinutes / 60);
+  const minutes = walkingTimeInMinutes % 60;
+
+  // Return time in "jam" (hours) and "menit" (minutes) format
+  if (hours > 0) {
+    return `${hours} j ${minutes} m`;
+  } else {
+    return `${minutes} menit`;
+  }
 };

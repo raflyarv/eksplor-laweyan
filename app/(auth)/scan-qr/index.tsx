@@ -1,4 +1,5 @@
 import { colors } from "@/theme/colors";
+import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
@@ -7,6 +8,7 @@ import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function QRScanner() {
   const [facing, setFacing] = useState<CameraType>("back");
+  const [hasScanned, setHasScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
   if (!permission) {
@@ -31,22 +33,29 @@ export default function QRScanner() {
   }
 
   const handleBarcodeScanned = ({ data }: any) => {
-    // Assuming the scanned data is in the format "/detail/[id]".
-    // You may need to adjust this based on your QR code structure.
-    const id = data.split(":").pop(); // Extract the id from the scanned data.
+    if (!hasScanned) {
+      // Check if a scan has already been processed
+      setHasScanned(true); // Set scanning status to true
+      const id = data.split(":").pop(); // Extract the id from the scanned data.
 
-    // Navigate to the detail page with the extracted id
-    router.push({
-      pathname: "/details/[id]",
-      params: { id: id },
-    });
+      // Navigate to the detail page with the extracted id
+      router.push({
+        pathname: "/details/[id]",
+        params: { id: id },
+      });
+
+      // Optionally, you can reset the scanning status after a delay
+      setTimeout(() => {
+        setHasScanned(false); // Reset scanning status if you want to allow further scans after a brief moment
+      }, 2000); // Reset after 2 seconds (you can adjust this time)
+    }
   };
 
   return (
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        facing={facing}
+        facing="back"
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
         }}
@@ -58,7 +67,7 @@ export default function QRScanner() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            marginTop: 20,
+            marginTop: 40,
             marginLeft: 20,
             backgroundColor: "white",
             width: 56,
@@ -72,10 +81,39 @@ export default function QRScanner() {
             color={colors.brand.main}
           />
         </TouchableOpacity>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Arahkan Kamera ke Kode QR</Text>
-          </TouchableOpacity>
+
+        <View
+          style={[
+            {
+              width: "auto",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 80,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              typography.title3Bold,
+              {
+                color: colors.brand.main,
+                backgroundColor: "white",
+                paddingHorizontal: 15,
+                paddingVertical: 5,
+                borderRadius: 5,
+              },
+            ]}
+          >
+            Arahkan Kamera ke Kode QR
+          </Text>
+        </View>
+
+        <View style={styles.scannerOverlay}>
+          <View style={[styles.scannerCorner, styles.topLeftCorner]} />
+          <View style={[styles.scannerCorner, styles.topRightCorner]} />
+          <View style={[styles.scannerCorner, styles.bottomLeftCorner]} />
+          <View style={[styles.scannerCorner, styles.bottomRightCorner]} />
         </View>
       </CameraView>
     </View>
@@ -93,6 +131,48 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+  },
+  scannerOverlay: {
+    position: "absolute",
+    top: "35%", // Adjusted to position it closer to the center
+    left: "15%",
+    right: "15%",
+    height: "35%", // Height adjusted for a more square aspect ratio
+    borderWidth: 2,
+    borderColor: "transparent", // Make the border transparent
+    borderStyle: "solid",
+  },
+  scannerCorner: {
+    position: "absolute",
+    width: 30,
+    height: 30,
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  topLeftCorner: {
+    top: -15,
+    left: -15,
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+  },
+  topRightCorner: {
+    top: -15,
+    right: -15,
+    borderTopWidth: 0,
+    borderRightWidth: 0,
+  },
+  bottomLeftCorner: {
+    bottom: -15,
+    left: -15,
+    borderBottomWidth: 0,
+    borderLeftWidth: 0,
+  },
+  bottomRightCorner: {
+    bottom: -15,
+    right: -15,
+    borderBottomWidth: 0,
+    borderRightWidth: 0,
   },
   buttonContainer: {
     flex: 1,

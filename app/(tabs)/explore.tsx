@@ -3,9 +3,8 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  Animated,
-  Dimensions,
-  PanResponder,
+  TouchableOpacity,
+  Image,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
@@ -17,11 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
-import { MenuView } from "@react-native-menu/menu";
-import { Picker } from "@react-native-picker/picker";
-import { SlidingContainer } from "../_components";
 import useFetchSites from "../_hooks/api/sites/useFetchSites";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 
 const INITIAL_REGION = {
   latitude: -7.56978246243824,
@@ -30,35 +26,18 @@ const INITIAL_REGION = {
   longitudeDelta: 0.0121,
 };
 
-interface MarkerProps {
-  name: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-}
-
-const markers: MarkerProps[] = [
+const mapStyle = [
   {
-    name: "Kantor Kelurahan Laweyan",
-    coordinates: {
-      latitude: -7.569718650419353,
-      longitude: 110.79690882605378,
-    },
-  },
-  {
-    name: "Solia Zigna",
-
-    coordinates: {
-      latitude: -7.570019098590299,
-      longitude: 110.79563008293876,
-    },
+    featureType: "poi",
+    elementType: "all",
+    stylers: [
+      { visibility: "off" }, // This hides all points of interest
+    ],
   },
 ];
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
 export default function Explore() {
+  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
   const [errorMsg, setErrorMsg] = useState<any>(null);
 
   const [currentLocation, setCurrentLocation] = useState<any>({});
@@ -66,6 +45,8 @@ export default function Explore() {
 
   const [chosenSource, setIsChosenSource] = useState<any>({});
   const [chosenDestination, setIsChosenDestination] = useState<any>({});
+
+  const { push } = useRouter();
 
   const handleMapPress = (name: string) => {
     setIsChosenDestination(name);
@@ -94,6 +75,7 @@ export default function Explore() {
           style={styles.map}
           initialRegion={INITIAL_REGION}
           showsUserLocation
+          customMapStyle={mapStyle}
         >
           {siteLists?.map((marker, index) => (
             <Marker
@@ -102,9 +84,9 @@ export default function Explore() {
                 latitude: marker.latitude,
                 longitude: marker.longitude,
               }}
-              onPress={() => handleMapPress(marker.siteName)}
             >
               <Callout
+                tooltip={true}
                 onPress={() =>
                   router.push({
                     pathname: "/details/[id]",
@@ -112,8 +94,25 @@ export default function Explore() {
                   })
                 }
               >
-                <View style={{ padding: 10 }}>
-                  <Text> {marker.siteName} </Text>
+                <View
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    backgroundColor: "white",
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                  }}
+                >
+                  {/* Site Name */}
+                  <Text
+                    style={[
+                      typography.title3Bold,
+                      { color: colors.brand.main },
+                    ]}
+                  >
+                    {" "}
+                    {marker.siteName}{" "}
+                  </Text>
                 </View>
               </Callout>
             </Marker>
@@ -121,9 +120,32 @@ export default function Explore() {
         </MapView>
 
         <View style={styles.searchContainer}>
-          <Text style={[typography.title1Bold, { color: colors.brand.main }]}>
+          <Text
+            style={[
+              typography.title1Bold,
+              {
+                color: colors.brand.main,
+                textShadowColor: "white", // White shadow color
+                textShadowOffset: { width: 2, height: 2 }, // Shadow offset
+                textShadowRadius: 0, // Shadow blur radius
+              },
+            ]}
+          >
             Explore
           </Text>
+
+          <TouchableOpacity
+            onPress={() => push("/search")}
+            style={styles.searchBar}
+          >
+            <TextInput
+              style={[styles.input, typography.headline]}
+              placeholder="Pencarian"
+              placeholderTextColor={colors.disable}
+              readOnly
+            />
+            <MaterialIcons name="search" size={32} color={colors.brand.main} />
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -161,7 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     rowGap: 10,
     paddingHorizontal: spacing.medium,
-    marginTop: spacing.medium,
+    marginTop: spacing.large,
     top: 0,
   },
 
@@ -178,9 +200,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.medium,
     backgroundColor: "white",
   },
+
   input: {
-    width: 300,
+    flex: 1, // Allow the TextInput to take up remaining space
     height: "100%",
+    marginRight: spacing.small, // Add margin to separate from the icon
   },
 
   picker: {

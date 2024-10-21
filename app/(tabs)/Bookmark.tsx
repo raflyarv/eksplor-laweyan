@@ -1,268 +1,218 @@
 import {
   View,
   Text,
-  FlatList,
-  Image,
   ScrollView,
+  SafeAreaView,
+  Image,
   Pressable,
 } from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing } from "@/theme/spacing";
 import { colors } from "@/theme/colors";
-import { BookmarkButton, FullScreenLoading, RatingStar } from "../_components";
-import { typography } from "@/theme/typography";
+import { FullScreenLoading, SiteListCard } from "../_components";
 import useFetchBookmarks from "../_hooks/api/bookmarks/useFetchBookmarks";
 import { averageRating } from "../utils/averageRating";
 import { calculateDistance, formatDistance } from "../utils/distanceUtils";
 import { calculateWalkingTime } from "../utils/calculateWalkingTime";
 import { useUserLocation } from "../_hooks/context/UserLocationContext";
 import { getOpenCloseStatus } from "../utils/openingHours";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
+import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
+import { typography } from "@/theme/typography";
+
+// Assuming you have an asset named 'checkmark-icon.png' in your assets folder
+const CHECKMARK_ICON = require("@/assets/static/icons/saved-location.png");
+
+const INITIAL_REGION = {
+  latitude: -7.56978246243824,
+  longitude: 110.7968015376953,
+  latitudeDelta: 0.015,
+  longitudeDelta: 0.0121,
+};
+
+const mapStyle = [
+  {
+    featureType: "poi",
+    elementType: "all",
+    stylers: [
+      { visibility: "off" }, // This hides all points of interest
+    ],
+  },
+];
 
 export default function Bookmark() {
-  const { userBookmarks, loading } = useFetchBookmarks();
+  const { userBookmarks, loading, refetch } = useFetchBookmarks();
   const { currentLocation } = useUserLocation();
-
-  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+  const { push } = useRouter();
 
   return (
     <>
       {loading && <FullScreenLoading />}
+      <View style={{ flex: 1 }}>
+        {/* MapView */}
+        <View style={{ width: "100%", height: 300 }}>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={{ width: "100%", height: "100%" }}
+            initialRegion={INITIAL_REGION}
+            showsUserLocation
+            customMapStyle={mapStyle}
+            scrollEnabled={true}
+            zoomEnabled={true}
+          >
+            {userBookmarks?.map((marker, index) => (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: marker.latitude,
+                  longitude: marker.longitude,
+                }}
+                // Custom marker with a checkmark image
+                image={CHECKMARK_ICON}
+              >
+                <Callout
+                  onPress={() =>
+                    router.push({
+                      pathname: "/details/[id]",
+                      params: { id: marker.id },
+                    })
+                  }
+                >
+                  <View style={{ padding: 10 }}>
+                    <Text> {marker.siteName} </Text>
+                  </View>
+                </Callout>
+              </Marker>
+            ))}
+          </MapView>
+        </View>
 
-      <ScrollView
-        style={{
-          flex: 1,
-          paddingHorizontal: spacing.medium,
-          backgroundColor: colors.background.offwhite,
-        }}
-      >
-        <SafeAreaView>
+        {/* Title "Bookmark" fixed at the top */}
+        <SafeAreaView
+          style={{
+            flex: 1,
+          }}
+        >
           <View
             style={{
-              marginBottom: spacing.medium,
+              width: "100%",
+              position: "absolute",
+              top: 0,
+              left: spacing.medium,
+              zIndex: 10,
+              backgroundColor: colors.background.offwhite,
+              paddingVertical: spacing.medium,
             }}
           >
-            <Text style={[typography.title1Bold, { color: colors.brand.main }]}>
-              Bookmark{" "}
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "bold",
+                color: colors.brand.main,
+              }}
+            >
+              Bookmark
             </Text>
           </View>
-          {userBookmarks?.map((bookmark, index) => {
-            const distance = calculateDistance(
-              currentLocation?.latitude || 0,
-              currentLocation?.longitude || 0,
-              bookmark.latitude || 0,
-              bookmark.longitude || 0
-            );
 
-            const openStatus = getOpenCloseStatus(
-              bookmark.operationalHours || ""
-            );
-
-            return (
-              <Pressable
-                key={`bookmark-${index}`}
-                onPress={() =>
-                  router.push({
-                    pathname: "/details/[id]",
-                    params: { id: bookmark.id },
-                  })
-                }
+          {/* ScrollView for bookmark list */}
+          <ScrollView
+            contentContainerStyle={{
+              paddingTop: 60, // Push content below the fixed "Bookmark" title
+              paddingHorizontal: spacing.medium,
+            }}
+            style={{
+              backgroundColor: colors.background.offwhite,
+              flex: 1,
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+            }}
+          >
+            {userBookmarks && userBookmarks.length === 0 ? (
+              <View
+                style={{
+                  width: "100%",
+                  height: 300,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginBottom: spacing.medium,
+                }}
               >
-                <View
+                <Image
                   style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    minHeight: 300,
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    marginBottom: spacing.medium,
+                    width: 200,
+                    height: 200,
                   }}
+                  source={require("@/assets/static/empty-bookmark.png")}
+                />
+                <Text
+                  style={[
+                    typography.subhead,
+                    { color: colors.text.disable, fontStyle: "italic" },
+                  ]}
                 >
-                  <FlatList
-                    data={bookmark.images}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item, index }) => (
-                      <Image
-                        source={{
-                          uri: `${baseUrl}/${item.url}`,
-                        }}
-                        style={{
-                          width: 200,
-                          height: 200,
-                          marginEnd:
-                            index === bookmark.images.length - 1 ? 0 : 5, // Set margin to 0 if it's the last item
-                          objectFit: "cover",
-                          borderRadius: 5,
-                        }}
-                      />
-                    )}
-                  />
-
-                  <View
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      paddingHorizontal: spacing.medium,
-                      paddingVertical: 12,
-                    }}
+                  {" "}
+                  Belum ada yang disimpan.{" "}
+                </Text>
+                <Pressable onPress={() => push("/Explore")}>
+                  <Text
+                    style={[
+                      typography.subhead,
+                      {
+                        color: colors.brand.main,
+                        fontStyle: "italic",
+                        textDecorationLine: "underline",
+                      },
+                    ]}
                   >
-                    <View
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Text
-                        ellipsizeMode="tail"
-                        numberOfLines={2}
-                        style={[
-                          typography.headline,
-                          { flex: 1, marginRight: 10 },
-                        ]}
-                      >
-                        {bookmark.siteName}
-                      </Text>
-                      <BookmarkButton locationId={bookmark.id} />
-                    </View>
+                    {" "}
+                    Jelajah sekarang!{" "}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              userBookmarks
+                ?.sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                ) // Sort by createdAt, descending
 
-                    <View
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <View
-                        style={{
-                          display: "flex",
-                          flexDirection: "row",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text
-                          style={[
-                            typography.subhead,
-                            { color: colors.text.disable },
-                          ]}
-                        >
-                          {" "}
-                          {averageRating(bookmark.reviews)}{" "}
-                        </Text>
-                        <RatingStar
-                          rating={averageRating(bookmark.reviews)}
-                          isEditable={false}
-                        />
-                        <Text
-                          style={[
-                            typography.subhead,
-                            { color: colors.text.disable },
-                          ]}
-                        >
-                          {" "}
-                          ({bookmark.reviews.length}){" "}
-                        </Text>
-                      </View>
+                .map((bookmark, index) => {
+                  const distance = calculateDistance(
+                    currentLocation?.latitude || 0,
+                    currentLocation?.longitude || 0,
+                    bookmark.latitude || 0,
+                    bookmark.longitude || 0
+                  );
 
-                      <View>
-                        <Text
-                          style={[
-                            typography.subhead,
-                            { color: colors.text.disable },
-                          ]}
-                        >
-                          {" "}
-                          {formatDistance(distance)}{" "}
-                        </Text>
-                      </View>
+                  const openStatus = getOpenCloseStatus(
+                    bookmark.operationalHours || ""
+                  );
 
-                      <View>
-                        <Text
-                          style={[
-                            typography.subhead,
-                            { color: colors.text.disable },
-                          ]}
-                        >
-                          {" "}
-                          {calculateWalkingTime(distance)}{" "}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View
-                      style={{
-                        width: "100%",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <Text style={[typography.subhead]}>
-                        {bookmark.address}{" "}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        columnGap: 10,
-                      }}
-                    >
-                      <Text
-                        style={[
-                          typography.subhead,
-                          {
-                            color:
-                              openStatus.indicator === "Buka"
-                                ? colors.success
-                                : colors.danger,
-                          },
-                        ]}
-                      >
-                        {openStatus.indicator}{" "}
-                      </Text>
-                      {openStatus.closing !== null &&
-                        openStatus.opening !== null && (
-                          <Text
-                            style={{
-                              color: colors.text.disable,
-                            }}
-                          >
-                            &#x2022;
-                          </Text>
-                        )}
-
-                      <Text
-                        style={[
-                          typography.subhead,
-                          { color: colors.text.disable },
-                        ]}
-                      >
-                        {openStatus.closing !== null &&
-                        openStatus.opening !== null
-                          ? openStatus.indicator === "Buka"
-                            ? `Tutup ${openStatus.closing}`
-                            : openStatus.nextOpeningDay
-                            ? `Tutup, buka ${openStatus.nextOpeningDay} jam ${openStatus.opening}`
-                            : `Buka ${openStatus.opening}`
-                          : " "}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
+                  return (
+                    <SiteListCard
+                      key={`bookmark-${index}`}
+                      id={bookmark.id}
+                      siteName={bookmark.siteName}
+                      address={bookmark.address}
+                      avrgRating={averageRating(bookmark.reviews)}
+                      reviewCount={bookmark.reviews.length}
+                      formattedDistance={formatDistance(distance)}
+                      walkingTime={calculateWalkingTime(distance)}
+                      openStatus={openStatus}
+                      images={bookmark.images}
+                      reviews={bookmark.reviews}
+                      onBookmarkToggled={refetch}
+                    />
+                  );
+                })
+            )}
+          </ScrollView>
         </SafeAreaView>
-      </ScrollView>
+      </View>
     </>
   );
 }

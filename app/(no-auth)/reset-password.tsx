@@ -116,7 +116,7 @@ export default function ResetPassword() {
           }}
         >
           <Text style={[typography.title2Bold]}>Reset Password </Text>
-          <Text style={[typography.footnote]}>
+          <Text style={[typography.subhead]}>
             Buat kata sandi baru dengan min. 8 karakter, terdapat huruf besar
             dan kecil, serta karakter unik atau numerikal.
           </Text>
@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
 });

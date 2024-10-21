@@ -8,9 +8,13 @@ import useFetchBookmarks from "@/app/_hooks/api/bookmarks/useFetchBookmarks";
 
 interface BookmarkButtonProps {
   locationId: any;
+  onBookmarkToggled?: () => void;
 }
 
-export default function BookmarkButton({ locationId }: BookmarkButtonProps) {
+export default function BookmarkButton({
+  locationId,
+  onBookmarkToggled,
+}: BookmarkButtonProps) {
   const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
   const [isBookmarked, setIsBookmarked] = useState(false);
   const { refetch } = useFetchBookmarks();
@@ -71,7 +75,11 @@ export default function BookmarkButton({ locationId }: BookmarkButtonProps) {
 
       // Refetch bookmark status
       await refetch();
-      console.log("Bookmarks refetched");
+      await fetchBookmarkStatus();
+
+      if (onBookmarkToggled) {
+        onBookmarkToggled();
+      }
     } catch (error) {
       console.error("Error toggling bookmark:", error);
     }

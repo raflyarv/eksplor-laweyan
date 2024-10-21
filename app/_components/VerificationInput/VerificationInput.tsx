@@ -1,4 +1,5 @@
 import { colors } from "@/theme/colors";
+import { typography } from "@/theme/typography";
 import React, { useEffect, useRef, useState } from "react";
 import { View, TextInput, StyleSheet, Text } from "react-native";
 
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 50,
     height: 80,
-    fontSize: 24,
-    color: "whiite",
+    color: colors.brand.main,
+    ...typography.title2Bold,
   },
 });

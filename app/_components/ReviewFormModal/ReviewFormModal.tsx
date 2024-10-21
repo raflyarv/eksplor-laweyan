@@ -199,7 +199,7 @@ export default function ReviewFormModal({
           >
             <Text
               style={[
-                typography.subhead,
+                typography.calllout,
                 {
                   marginBottom: 15,
                   fontStyle: "italic",
@@ -262,6 +262,7 @@ export default function ReviewFormModal({
             <TextInput
               style={[
                 styles.textInput,
+                typography.callout,
                 {
                   borderColor: errors.comments
                     ? colors.danger
@@ -298,7 +299,7 @@ export default function ReviewFormModal({
               justifyContent: "space-between",
             }}
           >
-            <Text style={(typography.footnote, { fontWeight: 500 })}>
+            <Text style={[typography.callout, { fontWeight: 500 }]}>
               {" "}
               Tanggal Kunjungan:{" "}
             </Text>

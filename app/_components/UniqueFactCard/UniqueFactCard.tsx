@@ -2,6 +2,7 @@ import { spacing } from "@/theme/spacing";
 import { MaterialIcons } from "@expo/vector-icons";
 import { View, Text } from "react-native";
 import { colors } from "@/theme/colors";
+import { typography } from "@/theme/typography";
 
 interface UniqueFactCardProps {
   fact: string;
@@ -34,13 +35,16 @@ export default function UniqueFactCard({ fact }: UniqueFactCardProps) {
             paddingVertical: spacing.medium,
             position: "relative",
             zIndex: 0,
-            backgroundColor: "#FFF1EC",
+            backgroundColor: colors.brand.semitransparent,
           }}
         >
           <Text
-            style={{
-              textAlign: "auto",
-            }}
+            style={[
+              typography.body,
+              {
+                textAlign: "auto",
+              },
+            ]}
             ellipsizeMode="tail"
             numberOfLines={4}
           >

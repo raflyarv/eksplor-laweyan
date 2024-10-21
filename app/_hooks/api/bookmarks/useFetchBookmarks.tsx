@@ -23,7 +23,10 @@ const useFetchBookmarks = () => {
           Authorization: `Bearer ${refreshToken}`,
         },
       });
-      setUserBookmarks(response.data);
+
+      const bookmarks = response.data || [];
+
+      setUserBookmarks(bookmarks);
     } catch (error: any) {
       setError(error.message || "An error occurred");
     } finally {

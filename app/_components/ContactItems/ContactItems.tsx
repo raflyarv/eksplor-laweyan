@@ -29,7 +29,8 @@ const iconMap = {
 const urlMap = {
   Instagram: (detail: string) =>
     `https://instagram.com/${detail.replace("@", "")}`,
-  Whatsapp: (detail: string) => `whatsapp://send?phone=${detail}`,
+  Whatsapp: (detail: string) =>
+    `https://api.whatsapp.com/send/?phone=${detail}`,
   Facebook: (detail: string) => `https://facebook.com/${detail}`,
   Website: (detail: string) => `https://${detail}`,
 };
@@ -45,20 +46,19 @@ export default function ContactItems({ type, name, detail }: ContactItemProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={
-          iconMap[type as "Instagram" | "Whatsapp" | "Facebook" | "Website"]
-        }
-        style={styles.icon}
-      />
-      <View style={styles.infoContainer}>
-        <Text style={[styles.contactName, typography.subhead]}>{name}</Text>
-        {/* <Pressable onPress={handleContactPress}>
-          <Text style={styles.contactDetail}>{detail}</Text>
-        </Pressable> */}
+    <Pressable onPress={handleContactPress}>
+      <View style={styles.container}>
+        <Image
+          source={
+            iconMap[type as "Instagram" | "Whatsapp" | "Facebook" | "Website"]
+          }
+          style={styles.icon}
+        />
+        <View style={styles.infoContainer}>
+          <Text style={[styles.contactName, typography.callout]}>{name}</Text>
+        </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

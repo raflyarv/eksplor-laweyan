@@ -12,7 +12,6 @@ import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
-import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
 import SendAgainButton from "../_components/SendAgainButton";
 import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
@@ -69,15 +68,7 @@ export default function VerifyEmail() {
     }
   };
 
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values,
-    setFieldValue,
-  } = useFormik({
+  const { handleSubmit, setFieldValue } = useFormik({
     initialValues,
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit,
@@ -103,7 +94,7 @@ export default function VerifyEmail() {
           }}
         >
           <Text style={[typography.title2Bold]}>Masukkan Kode Verifikasi </Text>
-          <Text style={[typography.footnote]}>
+          <Text style={[typography.subhead]}>
             Silahkan masukkan 6 digit kode verifikasi yang telah dikirimkan
             melalui email
             <Text style={{ fontWeight: 500, color: colors.brand.main }}>
@@ -136,30 +127,9 @@ export default function VerifyEmail() {
             style={styles.button}
             onPress={() => handleSubmit()}
           >
-            <Text style={styles.buttonText}>Submit</Text>
+            <Text style={styles.buttonText}>Verifikasi</Text>
           </TouchableOpacity>
         </View>
-
-        <Pressable
-          style={{
-            margin: 0,
-            padding: 0,
-          }}
-          onPress={() => router.push("/forgot-password")}
-        >
-          <Text
-            style={[
-              typography.footnote,
-              {
-                textDecorationLine: "underline",
-                color: colors.brand.main,
-                fontWeight: 500,
-              },
-            ]}
-          >
-            Forgot Password
-          </Text>
-        </Pressable>
 
         <IndicatorModal
           isVisible={isModalVisible}
@@ -198,6 +168,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
 });

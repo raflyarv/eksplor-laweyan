@@ -44,7 +44,7 @@ export default function RatingStar({
               }
               type="material"
               color={isFullStar || isHalfStar ? colors.warning : "#B0B0B0"}
-              size={20}
+              size={22}
             />
           </TouchableOpacity>
         );

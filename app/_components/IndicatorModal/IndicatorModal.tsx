@@ -15,6 +15,9 @@ const imageMap: { [key: string]: any } = {
   "email-sent": require("@/assets/static/email-sent.png"),
   "email-verified": require("@/assets/static/email-verified.png"),
   "password-not-same": require("@/assets/static/password-not-same.png"),
+  "edit-success": require("@/assets/static/edit-success.png"),
+  "already-exist": require("@/assets/static/registered-username.png"),
+
   // 'not-found': require("@/assets/static/not-found.png")
   // Add more images here
 };
@@ -98,6 +101,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
 });

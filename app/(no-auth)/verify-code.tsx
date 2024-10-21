@@ -77,15 +77,7 @@ export default function VerifyCode() {
     }
   };
 
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values,
-    setFieldValue,
-  } = useFormik({
+  const { handleSubmit, setFieldValue } = useFormik({
     initialValues,
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit,
@@ -111,7 +103,7 @@ export default function VerifyCode() {
           }}
         >
           <Text style={[typography.title2Bold]}>Masukkan Kode </Text>
-          <Text style={[typography.footnote]}>
+          <Text style={[typography.subhead]}>
             Silahkan masukkan 6 digit kode yang telah dikirimkan melalui email
             <Text style={{ fontWeight: 500, color: colors.brand.main }}>
               {" "}
@@ -136,7 +128,7 @@ export default function VerifyCode() {
             style={styles.button}
             onPress={() => handleSubmit()}
           >
-            <Text style={styles.buttonText}>Submit</Text>
+            <Text style={styles.buttonText}>Verifikasi</Text>
           </TouchableOpacity>
         </View>
 
@@ -177,6 +169,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    ...typography.callout,
     fontWeight: "bold",
   },
 });

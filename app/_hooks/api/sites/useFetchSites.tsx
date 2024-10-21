@@ -12,6 +12,7 @@ const useFetchSites = () => {
 
   useEffect(() => {
     const fetchAllSites = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(`${baseUrl}/api/site/all-sites`);
 

@@ -15,6 +15,7 @@ import IndicatorModal from "./IndicatorModal/IndicatorModal";
 import ContactItems from "./ContactItems";
 import EditProfileImgPicker from "./EditProfileImgPicker";
 import BookmarkButton from "./BookmarkButton";
+import SiteListCard from "./SiteListCard";
 
 export {
   DynamicAvatar,
@@ -34,4 +35,5 @@ export {
   ContactItems,
   EditProfileImgPicker,
   BookmarkButton,
+  SiteListCard,
 };

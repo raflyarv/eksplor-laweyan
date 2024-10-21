@@ -6,6 +6,8 @@ import {
   Pressable,
   Image,
   StyleSheet,
+  Dimensions,
+  ImageBackground,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { spacing } from "@/theme/spacing";
@@ -174,160 +176,173 @@ export default function Profile() {
     setFieldValue("existingProfileImage", userData.profileImage || "");
   }, [setFieldValue, userData.profileImage]);
 
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+  const imageHeight = screenHeight * 0.5; // Set height to 60% of screen height
+  const imageWidth = screenWidth; // Full width of the screen
+
   return (
-    <>
-      {isLoading && <FullScreenLoading />}
-      <SafeAreaView
+    <View
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+      }}
+    >
+      {/* Background Image */}
+      <ImageBackground
+        source={require("@/assets/static/bg-image/profile-bg.png")}
         style={{
           flex: 1,
-          justifyContent: "center", // Centers vertically
-          backgroundColor: "white", // Optional: Background color for better visuals
+          width: imageWidth,
+          height: imageHeight,
+          borderBottomLeftRadius: 150,
+          borderBottomRightRadius: 15,
         }}
       >
-        <View style={{}}>
+        <SafeAreaView
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            position: "static",
+            justifyContent: "center",
+            alignItems: "center",
+            marginVertical: "auto",
+          }}
+        >
+          {/* Profile Image Picker */}
+          <FormikProvider value={formik}>
+            <EditProfileImgPicker
+              name="newProfileImage"
+              error={formik.errors.newProfileImage}
+              setPreview={setPreview}
+              preview={preview}
+              existingImage={formik.values.existingProfileImage}
+              onSubmit={formik.submitForm}
+            />
+          </FormikProvider>
+
+          {/* Username and Email Section */}
+          <Text
+            style={[
+              typography.title2Bold,
+              {
+                color: "white",
+                marginBottom: spacing.small,
+                textAlign: "center",
+              },
+            ]}
+          >
+            {userData?.fullName}
+          </Text>
+
           <View
             style={{
-              paddingHorizontal: spacing.medium,
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: spacing.medium,
             }}
           >
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: 30,
-              }}
+            <Text
+              style={[typography.subhead, { color: colors.brand.semiwhite }]}
             >
-              {/* {userData.profileImage ? (
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{
-                      uri: `${baseURL}/${userData?.profileImage}`,
-                    }}
-                    style={styles.image}
-                  />
-                  <TouchableOpacity
-                    // onPress={() => setImage(null)}
-                    style={styles.clearButton}
-                  >
-                    <MaterialIcons
-                      name="delete"
-                      size={24}
-                      color={colors.danger}
-                    />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <>
-                  <MaterialIcons
-                    name="account-circle"
-                    size={150}
-                    color={colors.disable}
-                  />
-                </>
-              )} */}
-              <FormikProvider value={formik}>
-                <EditProfileImgPicker
-                  name="newProfileImage"
-                  error={formik.errors.newProfileImage}
-                  setPreview={setPreview}
-                  preview={preview}
-                  existingImage={formik.values.existingProfileImage}
-                />
-              </FormikProvider>
+              {userData?.username}
+            </Text>
+            <Text
+              style={[typography.subhead, { color: colors.brand.semiwhite }]}
+            >
+              {userData?.email}
+            </Text>
+          </View>
 
-              <Text
-                style={[
-                  typography.title3Bold,
-                  { color: colors.brand.main, marginBottom: 15 },
-                ]}
-              >
-                {userData?.fullName}
-              </Text>
-
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  columnGap: 10,
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => router.push("/profile/edit-profile")}
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: colors.brand.main,
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    borderRadius: 5,
-                    columnGap: 3,
-                  }}
-                >
-                  <MaterialIcons name="edit" size={18} color="white" />
-                  <Text style={[typography.subhead, { color: "white" }]}>
-                    {" "}
-                    Edit Profil{" "}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={toggleModal}
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    borderColor: colors.danger,
-                    borderWidth: 2,
-                    borderRadius: 5,
-                    columnGap: 3,
-                  }}
-                >
-                  <MaterialIcons
-                    name="exit-to-app"
-                    size={18}
-                    color={colors.danger}
-                  />
-                  <Text style={[typography.subhead, { color: colors.danger }]}>
-                    Keluar
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View
+          {/* Edit Profile and Logout Buttons */}
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              columnGap: 10,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => router.push("/profile/edit-profile")}
               style={{
-                display: "flex",
                 flexDirection: "row",
-                justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: 15,
+                backgroundColor: "white",
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 5,
+                columnGap: 5,
               }}
             >
-              <Text style={[typography.headline, { color: colors.text.main }]}>
-                {" "}
-                Ulasan yang Diberikan ({userReviews.length}){" "}
+              <MaterialIcons name="edit" size={24} color={colors.brand.main} />
+              <Text style={[typography.body, { color: colors.brand.main }]}>
+                Edit Profil
               </Text>
+            </TouchableOpacity>
 
-              <Pressable
-              // onPress={() => {
-              //   router.push({
-              //     pathname: "/details/reviews",
-              //     params: { id: id },
-              //   });
-              // }}
-              >
-                <Text style={[typography.subhead]}> Lihat Semua </Text>
-              </Pressable>
-            </View>
+            <TouchableOpacity
+              onPress={toggleModal}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 5,
+                backgroundColor: "white",
+                columnGap: 3,
+              }}
+            >
+              <MaterialIcons
+                name="exit-to-app"
+                size={24}
+                color={colors.danger}
+              />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+      <ScrollView
+        style={{
+          flex: 1,
+          backgroundColor: "transparent",
+          width: "100%",
+          marginTop: 20,
+        }}
+        contentContainerStyle={{
+          paddingTop: 35,
+        }}
+      >
+        <View style={{ paddingHorizontal: spacing.medium }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 15,
+            }}
+          >
+            <Text style={[typography.title3Bold, { color: colors.text.main }]}>
+              Ulasan Saya ({userReviews.length})
+            </Text>
+          </View>
 
-            <ScrollView horizontal>
-              {userReviews.length > 0 ? (
-                userReviews.map((review, index) => (
+          <ScrollView horizontal>
+            {userReviews.length > 0 ? (
+              userReviews
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                )
+                .map((review, index) => (
                   <MyReviewCards
                     key={`review-${index}`}
                     locationId={review.locationId}
@@ -340,44 +355,102 @@ export default function Profile() {
                     onReviewSubmit={handleReviewSubmit}
                   />
                 ))
-              ) : (
-                <View>
-                  <Text> Belum ada ulasan. </Text>
-                </View>
-              )}
-            </ScrollView>
-          </View>
-
-          <ConfirmationModal
-            isVisible={isModalVisible}
-            onClose={toggleModal}
-            imageUrl="logout"
-            title="Anda yakin Ingin Keluar ?"
-            onCloseAfter={() => handleLogout()}
-            buttonText="Keluar"
-          />
+            ) : (
+              <View>
+                <Text>Belum ada ulasan.</Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
-      </SafeAreaView>
-      {isLoading && <FullScreenLoading />}
-    </>
+
+        {/* Logout Confirmation Modal */}
+        <ConfirmationModal
+          isVisible={isModalVisible}
+          onClose={toggleModal}
+          imageUrl="logout"
+          title="Anda yakin Ingin Keluar?"
+          onCloseAfter={handleLogout}
+          buttonText="Keluar"
+        />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  imageContainer: {
-    position: "relative",
+  safeArea: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
   },
-  image: {
-    width: 150,
-    height: 150,
-    borderRadius: 100,
-  },
-  clearButton: {
+  backgroundContainer: {
     position: "absolute",
-    top: 5,
-    right: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-    borderRadius: 15,
-    padding: 5,
+    width: "100%",
+    height: Dimensions.get("window").height * 0.5,
+    zIndex: -1,
+  },
+  backgroundImage: {
+    width: "100%",
+    height: "100%",
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+  },
+  fullName: {
+    ...typography.title2Bold,
+    color: "white",
+    marginBottom: spacing.small,
+    paddingHorizontal: 30,
+    textAlign: "center",
+  },
+  userDetails: {
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: spacing.medium,
+  },
+  username: {
+    ...typography.subhead,
+    color: colors.brand.semiwhite,
+  },
+  email: {
+    ...typography.subhead,
+    color: colors.brand.semiwhite,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    columnGap: 10,
+  },
+  editProfileButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    columnGap: 3,
+  },
+  editProfileText: {
+    ...typography.subhead,
+    color: colors.brand.main,
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  scrollView: {
+    width: "100%",
+    paddingHorizontal: spacing.large,
+  },
+  reviewSection: {
+    marginTop: spacing.large,
+  },
+  reviewTitle: {
+    ...typography.title3Bold,
+    marginBottom: spacing.medium,
   },
 });

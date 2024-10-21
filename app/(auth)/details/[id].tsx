@@ -24,7 +24,6 @@ import {
 } from "@/app/_components";
 import { Icon } from "react-native-elements";
 
-import site from "@/assets/dummy/sites.json";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SiteDetailsProps } from "@/app/_models/site.model";
 import axios from "axios";
@@ -140,27 +139,62 @@ export default function SiteDetails() {
 
   return (
     <>
-      <SafeAreaView>
+      <SafeAreaView
+        style={{
+          flex: 1,
+        }}
+      >
+        <View
+          style={{
+            width: "100%",
+            position: "static",
+            display: "flex",
+            flexDirection: "row",
+            paddingHorizontal: spacing.medium,
+            paddingTop: 20,
+            paddingBottom: 10,
+            justifyContent: "space-between",
+            columnGap: 10,
+            alignItems: "center",
+          }}
+        >
+          <TouchableOpacity onPress={() => router.push("/(tabs)")}>
+            <MaterialIcons
+              name="arrow-back"
+              color={colors.brand.main}
+              size={32}
+            />
+          </TouchableOpacity>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flex: 1, // Allow it to take up remaining space
+              marginBottom: spacing.small,
+            }}
+          >
+            <Text
+              style={[
+                typography.title2Bold,
+                { flexShrink: 1, marginRight: spacing.small }, // Allow the text to shrink and create space for the button
+              ]}
+              ellipsizeMode="tail"
+              numberOfLines={2}
+            >
+              {siteData?.siteName}
+            </Text>
+
+            <BookmarkButton locationId={id} />
+          </View>
+        </View>
+
         <ScrollView
           style={{
             paddingHorizontal: spacing.medium,
           }}
         >
-          <View
-            style={{
-              width: "100%",
-              marginVertical: spacing.medium,
-            }}
-          >
-            <TouchableOpacity onPress={() => router.push("/(tabs)")}>
-              <MaterialIcons
-                name="arrow-back"
-                color={colors.brand.main}
-                size={32}
-              />
-            </TouchableOpacity>
-          </View>
-
           <ScrollView
             horizontal
             style={{
@@ -170,102 +204,26 @@ export default function SiteDetails() {
             {siteData?.images.map((image, index) => (
               <Image
                 key={`image-${index}`}
-                width={300}
-                height={350}
+                width={350}
+                height={400}
                 source={{
                   uri: `${process.env.EXPO_PUBLIC_BASE_URL}/${image.url}`,
                 }}
-                style={{
-                  borderRadius: 5,
-                  marginRight: spacing.medium,
-                }}
+                style={[
+                  {
+                    borderRadius: 5,
+                  },
+
+                  index < siteData.images.length - 1
+                    ? { marginRight: spacing.medium }
+                    : {},
+                ]}
               />
             ))}
           </ScrollView>
 
           <View>
-            {/* Title & Bookmark */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: spacing.small,
-              }}
-            >
-              <Text
-                style={[typography.title3Bold, { width: 300 }]}
-                ellipsizeMode="tail"
-                numberOfLines={2}
-              >
-                {siteData?.siteName}
-              </Text>
-
-              <BookmarkButton locationId={id} />
-            </View>
-
             {/* Rating and Distance */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: spacing.medium,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  columnGap: 5,
-                }}
-              >
-                <MaterialIcons name="star" size={24} color={colors.warning} />
-                <Text style={[typography.subhead, { color: colors.text.main }]}>
-                  {siteReview.length > 0
-                    ? averageRating(siteReview)
-                    : "Belum ada ulasan"}
-                </Text>
-                <Text style={[typography.subhead, { color: colors.text.main }]}>
-                  {siteReview.length > 0 ? `(${siteReview.length})` : `(0)`}
-                </Text>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  columnGap: spacing.small,
-                  alignItems: "center",
-                }}
-              >
-                <MaterialIcons
-                  name="near-me"
-                  size={24}
-                  color={colors.success}
-                />
-                <Text style={[typography.subhead, { color: colors.text.main }]}>
-                  {formatDistance(distance)}{" "}
-                </Text>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  columnGap: spacing.small,
-                  alignItems: "center",
-                }}
-              >
-                <MaterialIcons
-                  name="directions-walk"
-                  size={24}
-                  color={colors.success}
-                />
-                <Text style={[typography.subhead, { color: colors.text.main }]}>
-                  {walkingTime}{" "}
-                </Text>
-              </View>
-            </View>
 
             <View
               style={{
@@ -273,13 +231,13 @@ export default function SiteDetails() {
                 flexDirection: "row",
                 columnGap: spacing.small,
                 justifyContent: "flex-start",
-                alignItems: "flex-start",
+                alignItems: "center",
                 marginBottom: spacing.medium,
               }}
             >
               <MaterialIcons
                 name="location-on"
-                size={24}
+                size={28}
                 color={colors.danger}
               />
               <Text
@@ -297,11 +255,118 @@ export default function SiteDetails() {
 
             <View
               style={{
-                marginBottom: spacing.medium,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: spacing.small,
               }}
             >
-              <Text style={typography.headline}>Fakta Unik</Text>
-              <ScrollView horizontal>
+              <View
+                style={{
+                  display: "flex",
+                  width: "45%",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  paddingVertical: 10,
+                  borderRadius: 5,
+                  backgroundColor: colors.brand.semitransparent,
+                }}
+              >
+                <Text style={[typography.footnote]}> Jarak Tempuh* </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    columnGap: spacing.small,
+                    alignItems: "center",
+                  }}
+                >
+                  <MaterialIcons
+                    name="near-me"
+                    size={28}
+                    color={colors.primary}
+                  />
+                  <Text
+                    style={[typography.title3Bold, { color: colors.text.main }]}
+                  >
+                    {formatDistance(distance)}{" "}
+                  </Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  width: "45%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  paddingVertical: 10,
+                  borderRadius: 5,
+                  backgroundColor: colors.brand.semitransparent,
+                }}
+              >
+                <Text style={[typography.footnote]}>Waktu Tempuh** </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    columnGap: spacing.small,
+                    alignItems: "center",
+                  }}
+                >
+                  <MaterialIcons
+                    name="directions-walk"
+                    size={28}
+                    color={colors.success}
+                  />
+                  <Text
+                    style={[typography.title3Bold, { color: colors.text.main }]}
+                  >
+                    {walkingTime}{" "}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                marginBottom: spacing.large,
+              }}
+            >
+              <Text
+                style={[
+                  typography.caption1,
+                  { fontStyle: "italic", color: colors.brand.main },
+                ]}
+              >
+                *Estimasi tanpa adanya kemacetan dan hambatan di jalan.{" "}
+              </Text>
+              <Text
+                style={[
+                  typography.caption1,
+                  { fontStyle: "italic", color: colors.brand.main },
+                ]}
+              >
+                **Estimasi waktu tempuh berdasarkan kecepatan jalan orang
+                dewasa: 5km/jam.{" "}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                marginBottom: spacing.large,
+              }}
+            >
+              <Text
+                style={[typography.title3Bold, { marginBottom: spacing.small }]}
+              >
+                Fakta Unik
+              </Text>
+              <ScrollView horizontal style={{}}>
                 {siteData?.uniqueFacts.map((fact, index) => (
                   <UniqueFactCard key={`fact-${index}`} fact={fact.fact} />
                 ))}
@@ -310,7 +375,7 @@ export default function SiteDetails() {
 
             <View
               style={{
-                marginBottom: spacing.medium,
+                marginBottom: spacing.large,
               }}
             >
               <View
@@ -318,10 +383,10 @@ export default function SiteDetails() {
                   width: "100%",
                   flexDirection: "row",
                   alignItems: "center",
-                  marginBottom: spacing.small,
+                  marginBottom: spacing.medium,
                 }}
               >
-                <Text style={[typography.headline]}>Seputar </Text>
+                <Text style={[typography.title3Bold]}>Seputar </Text>
 
                 <Text
                   style={[
@@ -331,14 +396,14 @@ export default function SiteDetails() {
                       backgroundColor: colors.brand.main,
                       color: "white",
                     },
-                    typography.headline,
+                    typography.title3Bold,
                   ]}
                 >
                   {siteData?.siteName}
                 </Text>
               </View>
 
-              <Text style={[typography.subhead, { textAlign: "justify" }]}>
+              <Text style={[typography.callout, { textAlign: "justify" }]}>
                 {siteData?.description}
               </Text>
             </View>
@@ -351,7 +416,7 @@ export default function SiteDetails() {
                 height: "auto",
                 justifyContent: "space-between",
                 alignItems: isOpenDropdown ? "flex-start" : "center",
-                marginBottom: spacing.medium,
+                marginBottom: spacing.large,
               }}
             >
               <View
@@ -359,7 +424,7 @@ export default function SiteDetails() {
                   width: "auto",
                 }}
               >
-                <Text style={[typography.headline]}>Jam Operasional </Text>
+                <Text style={[typography.title3Bold]}>Jam Operasional </Text>
               </View>
               <Pressable
                 style={{
@@ -383,16 +448,22 @@ export default function SiteDetails() {
                           }}
                         >
                           <Text
-                            style={{
-                              width: "30%",
-                            }}
+                            style={[
+                              typography.callout,
+                              {
+                                width: "30%",
+                              },
+                            ]}
                           >
                             {hari.day}
                           </Text>
                           <Text
-                            style={{
-                              width: "55%",
-                            }}
+                            style={[
+                              typography.callout,
+                              {
+                                width: "55%",
+                              },
+                            ]}
                           >
                             : {hari.openHour} - {hari.closeHour}
                           </Text>
@@ -402,27 +473,29 @@ export default function SiteDetails() {
                   ) : (
                     <View
                       style={{
-                        width: "auto",
                         flexDirection: "row",
                         alignItems: "center",
                         alignContent: "center",
                       }}
                     >
                       <Text
-                        style={{
-                          width: "30%",
-                          color:
-                            result.indicator === "Tutup"
-                              ? colors.danger
-                              : colors.success,
-                        }}
+                        style={[
+                          typography.headline,
+                          {
+                            width: "25%",
+                            color:
+                              result.indicator === "Tutup"
+                                ? colors.danger
+                                : colors.success,
+                          },
+                        ]}
                       >
                         {result.indicator}
                       </Text>
 
                       <Text
                         style={{
-                          width: "10%",
+                          width: "7%",
                           color: colors.text.disable,
                         }}
                       >
@@ -431,21 +504,32 @@ export default function SiteDetails() {
 
                       <View
                         style={{
-                          width: "auto",
                           flexDirection: "row",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
                         <Text
-                          style={{
-                            width: 100,
-                            color: colors.text.disable,
-                          }}
+                          style={[
+                            typography.body,
+                            {
+                              width: 110,
+                              color: colors.text.disable,
+                            },
+                          ]}
                         >
-                          {result.indicator === "Buka"
-                            ? `Tutup ${result.closing}`
-                            : `Buka ${result.opening}`}
+                          {result.closing !== null && result.opening !== null
+                            ? result.indicator === "Buka"
+                              ? `Tutup ${result.closing}`
+                              : result.nextOpeningDay
+                              ? `Buka ${result.nextOpeningDay} ${
+                                  result.modifiedResult.find(
+                                    (hours) =>
+                                      hours.day === result.nextOpeningDay
+                                  )?.openHour
+                                }`
+                              : `Tutup ${result.closing}`
+                            : " "}
                         </Text>
 
                         <MaterialIcons
@@ -470,10 +554,8 @@ export default function SiteDetails() {
                 marginBottom: spacing.medium,
               }}
             >
-              <Text style={[typography.headline]}>
-                Ulasan ({siteReview.length > 0 && siteReview.length}){" "}
-              </Text>
-              <Pressable
+              <Text style={[typography.title3Bold]}>Ulasan</Text>
+              {/* <Pressable
                 onPress={() => {
                   router.push({
                     pathname: "/details/reviews",
@@ -484,7 +566,27 @@ export default function SiteDetails() {
                 {siteReview.length > 4 && (
                   <Text style={[typography.subhead]}> Lihat Semua </Text>
                 )}
-              </Pressable>
+              </Pressable> */}
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={[typography.title3Bold, {}]}>
+                  {averageRating(siteReview)}{" "}
+                  <Text style={[typography.title3, { color: "grey" }]}>
+                    ({siteReview.length > 0 && siteReview.length})
+                  </Text>
+                </Text>
+
+                <RatingStar
+                  isEditable={false}
+                  rating={averageRating(siteReview)}
+                />
+              </View>
             </View>
 
             {siteReview.length > 0 ? (
@@ -495,18 +597,24 @@ export default function SiteDetails() {
                 }}
               >
                 {siteReview.length > 0 &&
-                  siteReview.map((review, index) => (
-                    <ReviewCards
-                      key={`review-${index}`}
-                      name={review.userId?.fullName}
-                      reviewCount={review.userId.reviewCount}
-                      userProfileImg={review.userId?.profileImage}
-                      rating={review.rating}
-                      timestamp={review.createdAt}
-                      dateVisited={review.dateVisited}
-                      content={review.comments}
-                    />
-                  ))}
+                  siteReview
+                    .sort(
+                      (a, b) =>
+                        new Date(b.createdAt).getTime() -
+                        new Date(a.createdAt).getTime()
+                    ) // Sort by createdAt, descending
+                    .map((review, index) => (
+                      <ReviewCards
+                        key={`review-${index}`}
+                        name={review.userId?.fullName}
+                        reviewCount={review.userId.reviewCount}
+                        userProfileImg={review.userId?.profileImage}
+                        rating={review.rating}
+                        timestamp={review.createdAt}
+                        dateVisited={review.dateVisited}
+                        content={review.comments}
+                      />
+                    ))}
               </ScrollView>
             ) : (
               <View
@@ -539,7 +647,7 @@ export default function SiteDetails() {
             )}
 
             <TouchableOpacity
-              style={styles.button}
+              style={[styles.button, { marginBottom: spacing.large }]}
               onPress={() => setIsModalVisible(true)}
             >
               <MaterialIcons
@@ -559,14 +667,20 @@ export default function SiteDetails() {
               display: "flex",
               flexDirection: "column",
               rowGap: 5,
+              marginBottom: spacing.large,
             }}
           >
-            <Text style={[typography.headline]}>Hubungi Kami </Text>
+            <Text
+              style={[typography.title3Bold, { marginBottom: spacing.small }]}
+            >
+              Hubungi Kami{" "}
+            </Text>
             <View
               style={{
                 width: "100%",
                 display: "flex",
                 flexDirection: "row",
+                columnGap: 15,
                 flexWrap: "wrap",
               }}
             >

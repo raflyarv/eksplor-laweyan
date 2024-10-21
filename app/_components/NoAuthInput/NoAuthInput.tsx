@@ -68,7 +68,7 @@ export default function NoAuthInput({
               style={styles.iconButton}
             >
               <Ionicons
-                name={passwordVisible ? "eye-off-outline" : "eye-outline"}
+                name={!passwordVisible ? "eye-off-outline" : "eye-outline"}
                 size={24}
                 color={placeholderTextColor || "gray"}
               />
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
 
   textInput: {
     flex: 1,
+    ...typography.callout,
   },
 
   iconButton: {
