@@ -13,12 +13,14 @@ import { toFormikValidationSchema } from "zod-formik-adapter";
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { router } from "expo-router";
-import SendAgainButton from "../_components/SendAgainButton";
-import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
 import { useState } from "react";
 import axios from "axios";
 import { useModal } from "../_hooks/context/ModalContext";
-import { FullScreenLoading } from "../_components";
+import {
+  FullScreenLoading,
+  IndicatorModal,
+  SendAgainButton,
+} from "../_components";
 
 const formSchema = z.object({
   verificationCode: z.string({ required_error: "Kode Verifikasi Harus Diisi" }),
@@ -114,7 +116,7 @@ export default function VerifyEmail() {
             alignSelf: "flex-end",
           }}
         >
-          <SendAgainButton name="verifyEmail" />
+          <SendAgainButton name="verify-email" />
         </View>
 
         {/* Submit Button */}

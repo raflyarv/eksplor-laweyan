@@ -16,7 +16,11 @@ import { spacing } from "@/theme/spacing";
 import { router } from "expo-router";
 import axios from "axios";
 import { useState } from "react";
-import { FullScreenLoading, IndicatorModal } from "../_components";
+import {
+  FullScreenLoading,
+  IndicatorModal,
+  SendAgainButton,
+} from "../_components";
 
 const formSchema = z.object({
   resetPasswordCode: z.string({
@@ -64,6 +68,7 @@ export default function VerifyCode() {
     } catch (err: any) {
       setModalVisible(true);
       setOperationSuccess(false);
+      console.log(err);
     } finally {
       setIsLoading(false);
     }
@@ -117,6 +122,14 @@ export default function VerifyCode() {
           name="resetPasswordCode"
           setFieldValue={setFieldValue}
         />
+
+        <View
+          style={{
+            alignSelf: "flex-end",
+          }}
+        >
+          <SendAgainButton name="forgot-password" />
+        </View>
 
         {/* Submit Button */}
         <View

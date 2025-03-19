@@ -6,7 +6,6 @@ import { Icon } from "react-native-elements";
 import RatingStar from "../RatingStar";
 import { useState } from "react";
 import ReviewFormModal from "../ReviewFormModal";
-import { timeAgoIndicator } from "../../utils/dateUtils"; // Adjust the path as needed
 import { formatDateToIndonesian } from "@/app/utils/formattedDate";
 import { timeAgo } from "@/app/utils/timeAgo";
 import ConfirmationModal from "../ConfirmationModal";

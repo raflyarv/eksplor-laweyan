@@ -36,7 +36,7 @@ export default function HomeScreen() {
   const [errorMsg, setErrorMsg] = useState<any>(null);
 
   const { currentLocation } = useUserLocation();
-  const { refetchUserData } = useAuth();
+  const { refetchUserData, userData } = useAuth();
   const [userCurrentLocation, setUserCurrentLocation] = useState<any>({});
 
   useEffect(() => {
@@ -51,13 +51,14 @@ export default function HomeScreen() {
         coords: { latitude, longitude },
       } = await Location.getCurrentPositionAsync({});
       setUserCurrentLocation({ latitude, longitude });
-
-      refetchUserData();
     })();
   }, []);
 
-  const { siteLists, loading, error } = useFetchSites();
-  const { push, back } = useRouter();
+  useEffect(() => {
+    refetchUserData();
+  }, []);
+
+  const { siteLists, loading } = useFetchSites();
 
   return (
     <>

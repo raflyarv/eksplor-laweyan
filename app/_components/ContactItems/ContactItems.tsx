@@ -7,7 +7,6 @@ import {
   Linking,
   Image,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons"; // Ensure you have this installed
 import { colors } from "@/theme/colors"; // Adjust this according to your project structure
 import { typography } from "@/theme/typography";
 
@@ -32,7 +31,7 @@ const urlMap = {
   Whatsapp: (detail: string) =>
     `https://api.whatsapp.com/send/?phone=${detail}`,
   Facebook: (detail: string) => `https://facebook.com/${detail}`,
-  Website: (detail: string) => `https://${detail}`,
+  Website: (detail: string) => `${detail}`,
 };
 
 export default function ContactItems({ type, name, detail }: ContactItemProps) {

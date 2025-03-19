@@ -37,6 +37,7 @@ export default function ForgotPassword() {
 
   const onSubmit = async (values: forgotPassSchema) => {
     setIsLoading(true);
+
     const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
     try {
       const response = await axios.post(
@@ -44,11 +45,14 @@ export default function ForgotPassword() {
         values
       );
 
+      setOperationSuccess(true);
+
       router.push({
         pathname: "/verify-code",
         params: { email: values.email },
       });
     } catch (err: any) {
+      console.log(err);
       setModalVisible(true);
       setOperationSuccess(false);
     } finally {
@@ -135,13 +139,11 @@ export default function ForgotPassword() {
           onClose={toggleModal}
           imageUrl={operationSuccess ? "email-verified" : "password-not-same"}
           title={
-            operationSuccess
-              ? "Email Telah Terverifikasi!"
-              : "Email tidak terdaftar"
+            operationSuccess ? "Kode Telah Dikirim" : "Email tidak terdaftar"
           }
           description={
             operationSuccess
-              ? "Silahkan lakukan login kembali untuk mengakses aplikasi"
+              ? `Silahkan cek email ${values.email} untuk kode.`
               : `Email ${values.email} yang Anda Masukkan Belum Terdaftar.`
           }
         />

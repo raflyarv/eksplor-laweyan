@@ -71,7 +71,10 @@ export default function ReviewFormModal({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = async (values: ReviewFormSchema) => {
+  const onSubmit = async (
+    values: ReviewFormSchema,
+    { resetForm }: { resetForm: () => void }
+  ) => {
     setIsLoading(true);
     try {
       const refreshToken = await AsyncStorage.getItem("refreshToken");
@@ -93,6 +96,9 @@ export default function ReviewFormModal({
         // Check for update success or create success
         onReviewSubmit();
         onClose();
+        if (!reviewId) {
+          resetForm();
+        }
       }
     } catch (error: any) {
       console.log(error);

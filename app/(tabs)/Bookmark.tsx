@@ -178,8 +178,7 @@ export default function Bookmark() {
                   (a, b) =>
                     new Date(b.createdAt).getTime() -
                     new Date(a.createdAt).getTime()
-                ) // Sort by createdAt, descending
-
+                )
                 .map((bookmark, index) => {
                   const distance = calculateDistance(
                     currentLocation?.latitude || 0,

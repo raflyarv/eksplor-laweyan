@@ -4,7 +4,6 @@ import { Stack } from "expo-router";
 import { useAuth } from "../_hooks/context/AuthContext";
 
 export default function NoAuthLayout() {
-  const { isAuthenticated } = useAuth(); // Get the isAuthenticated status
   return (
     <Stack
       initialRouteName="login"

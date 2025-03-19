@@ -1,11 +1,10 @@
 interface Review {
-  rating: number; // Assuming rating is a number
-  // Include other properties of the review if needed
+  rating: number;
 }
 
 export const averageRating = (siteReviews: Review[]): number => {
   if (!siteReviews || siteReviews.length === 0) {
-    return 0; // Handle the case where there are no reviews
+    return 0;
   }
 
   const totalRating = siteReviews.reduce(

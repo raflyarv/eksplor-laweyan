@@ -110,6 +110,8 @@ export default function SiteDetails() {
   const result = getOpenCloseStatus(siteData?.operationalHours || "");
   const { currentLocation } = useUserLocation();
 
+  console.log(currentLocation);
+
   const distance = useMemo(
     () =>
       calculateDistance(
@@ -130,7 +132,7 @@ export default function SiteDetails() {
   const handleDirections = () => {
     const latitude = siteData?.latitude; // Replace with your desired latitude
     const longitude = siteData?.longitude; // Replace with your desired longitude
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    const url = `google.navigation:q=${latitude},${longitude}`;
 
     Linking.openURL(url).catch((err) =>
       console.error("Failed to open URL", err)
@@ -395,9 +397,12 @@ export default function SiteDetails() {
                       paddingVertical: 5,
                       backgroundColor: colors.brand.main,
                       color: "white",
+                      flexShrink: 1,
                     },
                     typography.title3Bold,
                   ]}
+                  ellipsizeMode="tail"
+                  numberOfLines={2}
                 >
                   {siteData?.siteName}
                 </Text>
@@ -424,11 +429,11 @@ export default function SiteDetails() {
                   width: "auto",
                 }}
               >
-                <Text style={[typography.title3Bold]}>Jam Operasional </Text>
+                <Text style={[typography.title3Bold]}>Jam Operasional</Text>
               </View>
               <Pressable
                 style={{
-                  width: "55%",
+                  width: "auto",
                 }}
                 onPress={() => setIsOpenDropwdown(!isOpenDropdown)}
               >
@@ -443,6 +448,7 @@ export default function SiteDetails() {
                         <View
                           key={index}
                           style={{
+                            width: "auto",
                             flexDirection: "row",
                             justifyContent: "flex-end",
                           }}
@@ -451,7 +457,7 @@ export default function SiteDetails() {
                             style={[
                               typography.callout,
                               {
-                                width: "30%",
+                                width: 70,
                               },
                             ]}
                           >
@@ -461,7 +467,7 @@ export default function SiteDetails() {
                             style={[
                               typography.callout,
                               {
-                                width: "55%",
+                                width: "auto",
                               },
                             ]}
                           >
@@ -482,11 +488,12 @@ export default function SiteDetails() {
                         style={[
                           typography.headline,
                           {
-                            width: "25%",
+                            width: "auto",
                             color:
                               result.indicator === "Tutup"
                                 ? colors.danger
                                 : colors.success,
+                            marginRight: 5,
                           },
                         ]}
                       >
@@ -495,7 +502,7 @@ export default function SiteDetails() {
 
                       <Text
                         style={{
-                          width: "7%",
+                          width: 10,
                           color: colors.text.disable,
                         }}
                       >
@@ -513,8 +520,9 @@ export default function SiteDetails() {
                           style={[
                             typography.body,
                             {
-                              width: 110,
+                              width: "auto",
                               color: colors.text.disable,
+                              marginRight: 5,
                             },
                           ]}
                         >
@@ -528,7 +536,7 @@ export default function SiteDetails() {
                                       hours.day === result.nextOpeningDay
                                   )?.openHour
                                 }`
-                              : `Tutup ${result.closing}`
+                              : `Buka ${result.closing}`
                             : " "}
                         </Text>
 

@@ -21,24 +21,59 @@ export default function VerificationInput({
       const otpString = otp.join("");
       setFieldValue(name, otpString); // Update the form value with the OTP string
     }
-  }, [otp]); // Runs when otp changes
+  }, [otp]);
 
-  // Function to handle text change in each input box
   const handleChange = (text: string, index: number): void => {
     const newOtp = [...otp];
-    newOtp[index] = text;
 
-    // Update the OTP state
-    setOtp(newOtp);
+    if (text.length > 1) {
+      // Handle multi-character paste
+      const chars = text.split("");
+      const remainingInputs = 6 - index; // Calculate remaining inputs available
+      const charsToPaste = chars.slice(0, remainingInputs); // Limit chars to paste to available inputs
 
-    // Move to the next input box automatically if input is a digit
-    if (text && index < 5) {
-      inputs.current[index + 1]?.focus(); // Use optional chaining to prevent errors
+      charsToPaste.forEach((char, i) => {
+        newOtp[index + i] = char; // Paste character into the OTP state
+      });
+
+      setOtp(newOtp);
+
+      // Move focus to the next empty input after pasting
+      const nextIndex = Math.min(index + charsToPaste.length, 5);
+      inputs.current[nextIndex]?.focus();
+    } else {
+      // Handle single character input
+      newOtp[index] = text;
+      setOtp(newOtp);
+
+      // Move focus to the next input box if not empty
+      if (text && index < 5) {
+        inputs.current[index + 1]?.focus();
+      }
+
+      // Move focus back if backspace is pressed
+      if (!text && index > 0) {
+        inputs.current[index - 1]?.focus();
+      }
     }
+  };
 
-    // If the backspace key is pressed, move to the previous input box
-    if (!text && index > 0) {
-      inputs.current[index - 1]?.focus(); // Use optional chaining to prevent errors
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === "Backspace") {
+      // If current field is empty and user presses backspace
+      if (otp[index] === "" && index > 0) {
+        // Move to the previous input
+        inputs.current[index - 1]?.focus();
+        // Clear the previous input's value
+        const newOtp = [...otp];
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+      } else if (otp[index] !== "") {
+        // If current field is not empty, clear the current input's value
+        const newOtp = [...otp];
+        newOtp[index] = "";
+        setOtp(newOtp);
+      }
     }
   };
 
@@ -51,8 +86,18 @@ export default function VerificationInput({
             ref={(input) => (inputs.current[index] = input)}
             value={digit}
             onChangeText={(text) => handleChange(text, index)}
+            onKeyPress={(e) => handleKeyPress(e, index)}
+            onFocus={() => {
+              // Automatically select text on focus
+              if (digit) {
+                setTimeout(() => {
+                  inputs.current[index]?.setNativeProps({ text: "" });
+                }, 0);
+              }
+            }}
             keyboardType="numeric"
             maxLength={1}
+            blurOnSubmit={false} // Keeps the input focused even when tapping outside
             style={styles.otpInput}
             textAlign="center"
           />

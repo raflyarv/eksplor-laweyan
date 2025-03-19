@@ -11,11 +11,12 @@ import ReviewCards from "./ReviewCards";
 import MyReviewCards from "./MyReviewCards";
 import ConfirmationModal from "./ConfirmationModal";
 import FullScreenLoading from "./FullScreenLoading";
-import IndicatorModal from "./IndicatorModal/IndicatorModal";
 import ContactItems from "./ContactItems";
 import EditProfileImgPicker from "./EditProfileImgPicker";
 import BookmarkButton from "./BookmarkButton";
 import SiteListCard from "./SiteListCard";
+import SendAgainButton from "./SendAgainButton";
+import IndicatorModal from "./IndicatorModal";
 
 export {
   DynamicAvatar,
@@ -36,4 +37,5 @@ export {
   EditProfileImgPicker,
   BookmarkButton,
   SiteListCard,
+  SendAgainButton,
 };

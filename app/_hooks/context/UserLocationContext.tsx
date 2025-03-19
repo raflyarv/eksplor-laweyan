@@ -35,7 +35,10 @@ export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
       let {
         coords: { latitude, longitude },
       } = await Location.getCurrentPositionAsync({});
-      setCurrentLocation({ latitude, longitude });
+      setCurrentLocation({
+        latitude,
+        longitude,
+      });
     })();
   }, []);
 

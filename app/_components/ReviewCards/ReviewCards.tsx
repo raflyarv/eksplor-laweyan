@@ -32,7 +32,7 @@ export default function ReviewCards({
   return (
     <View
       style={{
-        width: 360,
+        width: 320,
         minHeight: 100,
         maxHeight: 400,
         paddingHorizontal: 15,
@@ -45,7 +45,6 @@ export default function ReviewCards({
     >
       <View
         style={{
-          width: "100%",
           display: "flex",
           flexDirection: "row",
           gap: 5,
@@ -63,12 +62,21 @@ export default function ReviewCards({
         />
         <View
           style={{
+            width: "auto",
             display: "flex",
             flexDirection: "column",
+            flexShrink: 1,
+            marginLeft: 5,
           }}
         >
-          <Text style={[typography.headline]}> {name} </Text>
-          <Text style={[typography.subhead]}> {reviewCount} ulasan </Text>
+          <Text
+            style={[typography.headline]}
+            ellipsizeMode="tail"
+            numberOfLines={2}
+          >
+            {name}
+          </Text>
+          <Text style={[typography.subhead]}>{reviewCount} ulasan </Text>
         </View>
       </View>
 

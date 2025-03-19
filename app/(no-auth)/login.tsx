@@ -13,20 +13,15 @@ import { toFormikValidationSchema } from "zod-formik-adapter";
 import { useFormik } from "formik";
 import { typography } from "@/theme/typography";
 import { colors } from "@/theme/colors";
-import {
-  FullScreenLoading,
-  NoAuthInput,
-  ValidationModal,
-} from "../_components";
+import { FullScreenLoading, NoAuthInput, IndicatorModal } from "../_components";
 import { router } from "expo-router";
-import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../_hooks/context/AuthContext";
 
 // Define a Zod schema
 const formSchema = z.object({
-  username: z.string({ required_error: "Username harus diisi." }),
+  usernameOrEmail: z.string({ required_error: "Username harus diisi." }),
   password: z.string({ required_error: "Kata sandi tidak boleh kosong." }),
 });
 
@@ -34,7 +29,7 @@ const formSchema = z.object({
 type loginFormSchema = z.infer<typeof formSchema>;
 
 const initialValues: loginFormSchema = {
-  username: "",
+  usernameOrEmail: "",
   password: "",
 };
 
@@ -59,7 +54,7 @@ export default function Login() {
         router.push("/(tabs)");
       }
     } catch (err: any) {
-      console.log(err);
+      console.log(err.message);
       setModalVisible(true);
       setOperationSuccess(false);
     } finally {
@@ -111,12 +106,12 @@ export default function Login() {
 
         <NoAuthInput
           type="text"
-          placeholder="Masukkan Username Anda"
-          onChangeText={handleChange("username")}
-          onBlur={handleBlur("username")}
-          value={values.username}
-          error={errors.username}
-          touched={touched.username}
+          placeholder="Masukkan Username/Email Anda"
+          onChangeText={handleChange("usernameOrEmail")}
+          onBlur={handleBlur("usernameOrEmail")}
+          value={values.usernameOrEmail}
+          error={errors.usernameOrEmail}
+          touched={touched.usernameOrEmail}
           placeholderTextColor={colors.brand.light}
         />
 
@@ -217,7 +212,7 @@ export default function Login() {
           title={
             operationSuccess
               ? "Email Telah Terverifikasi!"
-              : "Username/password salah!"
+              : "Username/Email atau password salah!"
           }
           description={
             operationSuccess

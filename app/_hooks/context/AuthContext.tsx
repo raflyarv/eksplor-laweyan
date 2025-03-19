@@ -61,6 +61,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const checkToken = async () => {
       try {
         const refreshToken = await AsyncStorage.getItem("refreshToken");
+
+        console.log(refreshToken);
+
         if (refreshToken) {
           setIsAuthenticated(true);
           await fetchUserData(refreshToken); // Fetch user data using the refresh token

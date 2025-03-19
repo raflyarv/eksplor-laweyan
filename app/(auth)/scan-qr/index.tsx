@@ -1,3 +1,4 @@
+import { IndicatorModal } from "@/app/_components";
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -10,6 +11,7 @@ export default function QRScanner() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [hasScanned, setHasScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -20,34 +22,36 @@ export default function QRScanner() {
     // Camera permissions are not granted yet.
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>
-          We need your permission to show the camera
-        </Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Text style={styles.message}>Aplikasi membutuhkan akses ke kamera</Text>
+        <Button onPress={requestPermission} title="Berikan Akses" />
       </View>
     );
   }
 
-  function toggleCameraFacing() {
-    setFacing((current) => (current === "back" ? "front" : "back"));
-  }
+  // function toggleCameraFacing() {
+  //   setFacing((current) => (current === "back" ? "front" : "back"));
+  // }
 
   const handleBarcodeScanned = ({ data }: any) => {
     if (!hasScanned) {
       // Check if a scan has already been processed
-      setHasScanned(true); // Set scanning status to true
-      const id = data.split(":").pop(); // Extract the id from the scanned data.
+      setHasScanned(true);
+      const [prefix, id] = data.split(":");
 
-      // Navigate to the detail page with the extracted id
-      router.push({
-        pathname: "/details/[id]",
-        params: { id: id },
-      });
+      if (prefix === "sololaweyan") {
+        // Navigate to the detail page if the prefix is valid
+        router.push({
+          pathname: "/details/[id]",
+          params: { id: id },
+        });
+      } else {
+        // Show a message if the prefix is invalid
+        alert("QR tidak ditemukan");
+      }
 
-      // Optionally, you can reset the scanning status after a delay
       setTimeout(() => {
-        setHasScanned(false); // Reset scanning status if you want to allow further scans after a brief moment
-      }, 2000); // Reset after 2 seconds (you can adjust this time)
+        setHasScanned(false);
+      }, 3000);
     }
   };
 
@@ -116,6 +120,14 @@ export default function QRScanner() {
           <View style={[styles.scannerCorner, styles.bottomRightCorner]} />
         </View>
       </CameraView>
+
+      <IndicatorModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        imageUrl=""
+        title="Kode QR Tidak Ditemukan"
+        description="Silahkan scan kode QR pada toko/tempat wisata batik yang tersedia"
+      />
     </View>
   );
 }

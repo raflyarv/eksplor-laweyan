@@ -189,6 +189,7 @@ export default function Profile() {
         flexDirection: "column",
         justifyContent: "flex-start",
         alignItems: "center",
+        backgroundColor: "white",
       }}
     >
       {/* Background Image */}

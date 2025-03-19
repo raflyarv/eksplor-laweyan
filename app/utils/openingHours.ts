@@ -4,7 +4,7 @@ export interface OpeningHours {
   closeHour: string;
 }
 
-const daysMap: { [key: number]: string } = {
+export const daysMap: { [key: number]: string } = {
   0: "Senin",
   1: "Selasa",
   2: "Rabu",
@@ -80,6 +80,21 @@ export function getOpenCloseStatus(dataJamOperasional: string): {
       opening: todayHours.openHour,
       closing: todayHours.closeHour,
       nextOpeningDay: null,
+      modifiedResult,
+    };
+  }
+
+  // Check if current day is closed but will open later today
+  const isOpeningLaterToday =
+    currentHour < openHour ||
+    (currentHour === openHour && currentMinute < openMinute);
+
+  if (isOpeningLaterToday) {
+    return {
+      indicator: "Tutup",
+      opening: todayHours.openHour,
+      closing: todayHours.closeHour,
+      nextOpeningDay: currentDay, // Set to current day if opening later today
       modifiedResult,
     };
   }
