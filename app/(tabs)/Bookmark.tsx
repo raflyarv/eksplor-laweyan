@@ -6,7 +6,7 @@ import {
   Image,
   Pressable,
 } from "react-native";
-import React from "react";
+import React, { useCallback } from "react";
 import { spacing } from "@/theme/spacing";
 import { colors } from "@/theme/colors";
 import { FullScreenLoading, SiteListCard } from "../_components";
@@ -16,9 +16,10 @@ import { calculateDistance, formatDistance } from "../utils/distanceUtils";
 import { calculateWalkingTime } from "../utils/calculateWalkingTime";
 import { useUserLocation } from "../_hooks/context/UserLocationContext";
 import { getOpenCloseStatus } from "../utils/openingHours";
-import { router, useRouter } from "expo-router";
+import { router, useFocusEffect, useRouter } from "expo-router";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { typography } from "@/theme/typography";
+import { useNavHistory } from "../_hooks/context/NavigationContext";
 
 // Assuming you have an asset named 'checkmark-icon.png' in your assets folder
 const CHECKMARK_ICON = require("@/assets/static/icons/saved-location.png");
@@ -43,7 +44,16 @@ const mapStyle = [
 export default function Bookmark() {
   const { userBookmarks, loading, refetch } = useFetchBookmarks();
   const { currentLocation } = useUserLocation();
-  const { push } = useRouter();
+
+  const { push } = useNavHistory();
+
+  useFocusEffect(
+    // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+    useCallback(() => {
+      // Invoked whenever the route is focused.
+      push("/Bookmark");
+    }, [])
+  );
 
   return (
     <>
@@ -70,14 +80,7 @@ export default function Bookmark() {
                 // Custom marker with a checkmark image
                 image={CHECKMARK_ICON}
               >
-                <Callout
-                  onPress={() =>
-                    router.push({
-                      pathname: "/details/[id]",
-                      params: { id: marker.id },
-                    })
-                  }
-                >
+                <Callout onPress={() => push(`/details/${marker.id}`)}>
                   <View style={{ padding: 10 }}>
                     <Text> {marker.siteName} </Text>
                   </View>
@@ -205,6 +208,7 @@ export default function Bookmark() {
                       images={bookmark.images}
                       reviews={bookmark.reviews}
                       onBookmarkToggled={refetch}
+                      onNavigate={(id) => push(`/details/${id}`)}
                     />
                   );
                 })

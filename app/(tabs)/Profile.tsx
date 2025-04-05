@@ -9,7 +9,7 @@ import {
   Dimensions,
   ImageBackground,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -23,7 +23,7 @@ import {
   MyReviewCards,
   RatingStar,
 } from "../_components";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import IndicatorModal from "../_components/IndicatorModal/IndicatorModal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../_hooks/context/AuthContext";
@@ -33,6 +33,7 @@ import { ReviewProps } from "../_models/review.model";
 import { z } from "zod";
 import { Formik, FormikProvider, useFormik } from "formik";
 import { toFormikValidationSchema } from "zod-formik-adapter";
+import { useNavHistory } from "../_hooks/context/NavigationContext";
 
 const validationSchema = z.object({
   newProfileImage: z.any().nullable(),
@@ -49,7 +50,6 @@ const initialValues: profileFormType = {
 export default function Profile() {
   const { isAuthenticated, setIsAuthenticated, userData, refetchUserData } =
     useAuth(); // Get the isAuthenticated status
-  const baseURL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -57,6 +57,16 @@ export default function Profile() {
   const [preview, setPreview] = useState<string | null>(null);
 
   const [userReviews, setUserReviews] = useState<ReviewProps[]>([]);
+
+  const { push } = useNavHistory();
+
+  useFocusEffect(
+    // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+    useCallback(() => {
+      // Invoked whenever the route is focused.
+      push("/Profile");
+    }, [])
+  );
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -272,7 +282,7 @@ export default function Profile() {
             }}
           >
             <TouchableOpacity
-              onPress={() => router.push("/profile/edit-profile")}
+              onPress={() => push("/profile/edit-profile")}
               style={{
                 flexDirection: "row",
                 alignItems: "center",

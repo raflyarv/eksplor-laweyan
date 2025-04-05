@@ -26,6 +26,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/app/_hooks/context/AuthContext";
+import { useNavHistory } from "@/app/_hooks/context/NavigationContext";
 
 const formSchema = z
   .object({
@@ -229,6 +230,8 @@ export default function EditProfile() {
     onSubmit,
   });
 
+  const { back } = useNavHistory();
+
   return (
     <>
       {isLoading && <FullScreenLoading />}
@@ -252,7 +255,7 @@ export default function EditProfile() {
                 alignItems: "flex-start",
               }}
             >
-              <TouchableOpacity onPress={() => router.push("/Profile")}>
+              <TouchableOpacity onPress={back}>
                 <MaterialIcons
                   name="arrow-back"
                   size={32}

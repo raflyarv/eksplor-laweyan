@@ -6,14 +6,20 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as Location from "expo-location";
 
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { spacing } from "@/theme/spacing";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Link, router, useNavigation, useRouter } from "expo-router";
+import {
+  Link,
+  router,
+  useFocusEffect,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import ImageCard from "../_components/ImageCard";
 import { averageRating } from "../utils/averageRating";
 import { calculateDistance, formatDistance } from "../utils/distanceUtils";
@@ -22,6 +28,7 @@ import useFetchSites from "../_hooks/api/sites/useFetchSites";
 import { useUserLocation } from "../_hooks/context/UserLocationContext";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { useAuth } from "../_hooks/context/AuthContext";
+import { useNavHistory } from "../_hooks/context/NavigationContext";
 
 const INITIAL_REGION = {
   latitude: -7.56978246243824,
@@ -38,6 +45,16 @@ export default function HomeScreen() {
   const { currentLocation } = useUserLocation();
   const { refetchUserData, userData } = useAuth();
   const [userCurrentLocation, setUserCurrentLocation] = useState<any>({});
+
+  const { push } = useNavHistory();
+
+  useFocusEffect(
+    // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+    useCallback(() => {
+      // Invoked whenever the route is focused.
+      push("");
+    }, [])
+  );
 
   useEffect(() => {
     (async () => {
@@ -228,7 +245,7 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity onPress={() => router.push("/search")}>
+                <TouchableOpacity onPress={() => push("/search")}>
                   <Text
                     style={[
                       typography.subhead,
@@ -285,6 +302,7 @@ export default function HomeScreen() {
                             reviewTotal={item.reviews?.length}
                             distance={formatDistance(distance)}
                             imageUrl={`${baseUrl}/${item.images[0].url}`}
+                            onNavigate={(id) => push(`/details/${id}`)}
                           />
                         );
                       })
@@ -311,6 +329,7 @@ export default function HomeScreen() {
                             reviewTotal={item.reviews?.length}
                             distance={formatDistance(distance)}
                             imageUrl={`${baseUrl}/${item.images[0].url}`}
+                            onNavigate={(id) => push(`/details/${id}`)}
                           />
                         );
                       })}

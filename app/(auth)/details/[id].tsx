@@ -33,6 +33,7 @@ import { useUserLocation } from "@/app/_hooks/context/UserLocationContext";
 import { calculateDistance, formatDistance } from "@/app/utils/distanceUtils";
 import { averageRating } from "@/app/utils/averageRating";
 import * as Linking from "expo-linking";
+import { useNavHistory } from "@/app/_hooks/context/NavigationContext";
 
 // Perlu dibuat Models untuk cetakan
 interface OpeningHours {
@@ -71,6 +72,7 @@ export default function SiteDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+  const { back } = useNavHistory();
 
   useEffect(() => {
     const fetchSiteDetails = async () => {
@@ -109,8 +111,6 @@ export default function SiteDetails() {
 
   const result = getOpenCloseStatus(siteData?.operationalHours || "");
   const { currentLocation } = useUserLocation();
-
-  console.log(currentLocation);
 
   const distance = useMemo(
     () =>
@@ -160,7 +160,7 @@ export default function SiteDetails() {
             alignItems: "center",
           }}
         >
-          <TouchableOpacity onPress={() => router.push("/(tabs)")}>
+          <TouchableOpacity onPress={back}>
             <MaterialIcons
               name="arrow-back"
               color={colors.brand.main}

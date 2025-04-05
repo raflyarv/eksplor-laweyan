@@ -1,4 +1,5 @@
 import { IndicatorModal } from "@/app/_components";
+import { useNavHistory } from "@/app/_hooks/context/NavigationContext";
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -8,7 +9,7 @@ import { useState } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function QRScanner() {
-  const [facing, setFacing] = useState<CameraType>("back");
+  // const [facing, setFacing] = useState<CameraType>("back");
   const [hasScanned, setHasScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -55,6 +56,8 @@ export default function QRScanner() {
     }
   };
 
+  const { back } = useNavHistory();
+
   return (
     <View style={styles.container}>
       <CameraView
@@ -66,7 +69,7 @@ export default function QRScanner() {
         onBarcodeScanned={handleBarcodeScanned}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={back}
           style={{
             display: "flex",
             justifyContent: "center",

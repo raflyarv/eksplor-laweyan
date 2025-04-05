@@ -20,6 +20,7 @@ interface ImageCardProps {
   reviewTotal: number;
   distance: string;
   isLoading: boolean;
+  onNavigate: (id: string) => void;
 }
 
 export default function ImageCard({
@@ -30,18 +31,11 @@ export default function ImageCard({
   reviewTotal,
   distance,
   isLoading,
+  onNavigate,
 }: ImageCardProps) {
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={() =>
-          router.push({
-            pathname: "/details/[id]",
-            params: { id: id },
-          })
-        }
-        style={styles.container}
-      >
+      <Pressable onPress={() => onNavigate(id)} style={styles.container}>
         <ImageBackground
           source={{
             uri: imageUrl,

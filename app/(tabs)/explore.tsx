@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { Button } from "react-native-elements";
@@ -17,7 +17,8 @@ import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { MaterialIcons } from "@expo/vector-icons";
 import useFetchSites from "../_hooks/api/sites/useFetchSites";
-import { router, useRouter } from "expo-router";
+import { useNavHistory } from "../_hooks/context/NavigationContext";
+import { useFocusEffect } from "expo-router";
 
 const INITIAL_REGION = {
   latitude: -7.56978246243824,
@@ -37,20 +38,24 @@ const mapStyle = [
 ];
 
 export default function Explore() {
-  const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
   const [errorMsg, setErrorMsg] = useState<any>(null);
 
   const [currentLocation, setCurrentLocation] = useState<any>({});
   const { siteLists } = useFetchSites();
 
-  const [chosenSource, setIsChosenSource] = useState<any>({});
-  const [chosenDestination, setIsChosenDestination] = useState<any>({});
+  const { push } = useNavHistory();
 
-  const { push } = useRouter();
+  useFocusEffect(
+    // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+    useCallback(() => {
+      // Invoked whenever the route is focused.
+      push("/Explore");
 
-  const handleMapPress = (name: string) => {
-    setIsChosenDestination(name);
-  };
+      return () => {
+        push("");
+      };
+    }, [])
+  );
 
   useEffect(() => {
     (async () => {
@@ -87,16 +92,11 @@ export default function Explore() {
             >
               <Callout
                 tooltip={true}
-                onPress={() =>
-                  router.push({
-                    pathname: "/details/[id]",
-                    params: { id: marker.id },
-                  })
-                }
+                onPress={() => push(`/details/${marker.id}`)}
               >
                 <View
                   style={{
-                    width: "100%",
+                    maxWidth: 260,
                     display: "flex",
                     backgroundColor: "white",
                     paddingHorizontal: 10,
@@ -107,8 +107,10 @@ export default function Explore() {
                   <Text
                     style={[
                       typography.title3Bold,
-                      { color: colors.brand.main },
+                      { width: "auto", color: colors.brand.main },
                     ]}
+                    ellipsizeMode="tail"
+                    numberOfLines={1}
                   >
                     {" "}
                     {marker.siteName}{" "}

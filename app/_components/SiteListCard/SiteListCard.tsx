@@ -1,3 +1,4 @@
+import React from "react";
 import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 import { router } from "expo-router";
@@ -5,6 +6,7 @@ import { Pressable, View, FlatList, Image, Text } from "react-native";
 import { colors } from "@/theme/colors";
 import BookmarkButton from "../BookmarkButton";
 import RatingStar from "../RatingStar";
+import { useNavHistory } from "@/app/_hooks/context/NavigationContext";
 
 interface Images {
   _id: string;
@@ -27,6 +29,7 @@ interface SiteListCardProps {
   walkingTime: string;
   openStatus: any;
   onBookmarkToggled?: () => void;
+  onNavigate: (id: number) => void;
   images: Images[];
   reviews: Review[];
 }
@@ -38,23 +41,16 @@ export default function SiteListCard({
   siteName,
   address,
   avrgRating,
-  reviewCount,
   formattedDistance,
   walkingTime,
   openStatus,
   onBookmarkToggled,
   images,
   reviews,
+  onNavigate,
 }: SiteListCardProps) {
   return (
-    <Pressable
-      onPress={() =>
-        router.push({
-          pathname: "/details/[id]",
-          params: { id: id },
-        })
-      }
-    >
+    <Pressable onPress={() => onNavigate(id)}>
       <View
         style={{
           width: "100%",

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./_hooks/context/AuthContext";
 import { ModalProvider } from "./_hooks/context/ModalContext";
 
 import { Asset } from "expo-asset";
+import { NavHistoryProvider } from "./_hooks/context/NavigationContext";
 
 Asset.loadAsync([
   require("../assets/images/icon.png"),
@@ -14,7 +15,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ModalProvider>
-        <Slot />
+        <NavHistoryProvider>
+          <Slot />
+        </NavHistoryProvider>
       </ModalProvider>
     </AuthProvider>
   );

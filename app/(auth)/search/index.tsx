@@ -28,6 +28,7 @@ import { averageRating } from "@/app/utils/averageRating";
 import { calculateWalkingTime } from "@/app/utils/calculateWalkingTime";
 import useFetchBookmarks from "@/app/_hooks/api/bookmarks/useFetchBookmarks";
 import useFetchSites from "@/app/_hooks/api/sites/useFetchSites";
+import { useNavHistory } from "@/app/_hooks/context/NavigationContext";
 
 interface SortFilterModalProps {
   isVisible: boolean;
@@ -274,7 +275,7 @@ const SortFilterModal = ({
 
 export default function SearchPage() {
   const inputRef = useRef<TextInput | null>(null);
-  const { back } = useRouter();
+  const { back, push } = useNavHistory();
 
   const { currentLocation } = useUserLocation();
   const { siteLists, loading } = useFetchSites();
@@ -523,6 +524,7 @@ export default function SearchPage() {
                     images={item.images}
                     reviews={item.reviews}
                     onBookmarkToggled={refetch}
+                    onNavigate={(id) => push(`/details/${id}`)}
                   />
                 );
               })

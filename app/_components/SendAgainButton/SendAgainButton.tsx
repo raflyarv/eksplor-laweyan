@@ -51,7 +51,6 @@ export default function SendAgainButton({ name }: SendAgainButtonProps) {
         );
       }
 
-      console.log(response);
       setOperationSuccess(true); // Set success based on response
     } catch (error) {
       console.error(error);
