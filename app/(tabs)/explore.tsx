@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { Button } from "react-native-elements";
@@ -50,10 +50,6 @@ export default function Explore() {
     useCallback(() => {
       // Invoked whenever the route is focused.
       push("/Explore");
-
-      return () => {
-        push("");
-      };
     }, [])
   );
 
